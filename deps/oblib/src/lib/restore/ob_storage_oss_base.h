@@ -19,13 +19,16 @@
 #include <openssl/md5.h>
 
 #ifdef _WITH_OSS
-#include "aos_log.h"
-#include "aos_util.h"
-#include "aos_string.h"
-#include "aos_status.h"
-#include "oss_auth.h"
-#include "oss_util.h"
-#include "oss_api.h"
+#include <linux/limits.h>
+#include <apr-1/apr_portable.h>
+#include <oss_c_sdk/aos_http_io.h>
+#include "oss_c_sdk/aos_log.h"
+#include "oss_c_sdk/aos_util.h"
+#include "oss_c_sdk/aos_string.h"
+#include "oss_c_sdk/aos_status.h"
+#include "oss_c_sdk/oss_auth.h"
+#include "oss_c_sdk/oss_util.h"
+#include "oss_c_sdk/oss_api.h"
 #endif
 
 #include "lib/string/ob_string.h"

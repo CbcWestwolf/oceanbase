@@ -72,7 +72,8 @@ ObTaskExecutorCtx::ObTaskExecutorCtx(ObExecContext& exec_context)
       query_sys_begin_schema_version_(-1),
       schema_service_(NULL),
       partition_service_(NULL),
-      vt_partition_service_(NULL)
+      vt_partition_service_(NULL),
+      et_partition_service_(NULL)
 {}
 
 ObTaskExecutorCtx::~ObTaskExecutorCtx()

@@ -34,7 +34,6 @@ class ObPartitionService;
 }
 
 namespace sql {
-
 class ObTableScanOp;
 
 // table scan operator input
@@ -283,6 +282,7 @@ public:
   }
 
   int init_converter();
+  int init_table_access_type();
 
 protected:
   int init_pushdown_storage_filter();
@@ -352,8 +352,9 @@ protected:
   ObExprCtx expr_ctx_;
   ObPushdownFilterExecutor* filter_executor_;
   ObPushdownFilterExecutor* index_back_filter_executor_;
-
   const uint64_t* cur_trace_id_;
+  bool use_external_;
+  const share::schema::ObTableSchema* table_schema_;
 };
 
 }  // end namespace sql

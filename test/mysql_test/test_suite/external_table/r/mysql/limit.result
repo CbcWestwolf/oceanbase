@@ -1,0 +1,225 @@
+set ob_query_timeout=1000000000;
+drop database if exists et_test;
+create database et_test;
+use et_test;
+set recyclebin = 0;
+create external table file_csv_stu (
+sid     int,
+name    varchar(32),
+cls     int
+) external_url='/home/chenbochuan.cbc/data/px/stu.csv';
+create external table file_csv_teacher (
+tid        int,
+name       varchar(32),
+subject    varchar(4)
+) external_url='/home/chenbochuan.cbc/data/px/teacher.csv';
+create external table file_csv_score (
+sid     int,
+subject varchar(4),
+score   int
+) external_url='/home/chenbochuan.cbc/data/px/score.csv';
+create external table oss_csv_stu (
+sid     int,
+name    varchar(32),
+cls     int
+) external_url='oss://external-table/px/stu.csv?host=oss-cn-hangzhou.aliyuncs.com&access_id=DEscLTAIStR9ccJJGQFHEaP2&access_key=bhdegy7AqfsFLj]2YpolgMjyTFVZNhK', external_protocal='oss';
+create external table oss_csv_teacher (
+tid        int,
+name       varchar(32),
+subject    varchar(4)
+) external_url='oss://external-table/px/teacher.csv?host=oss-cn-hangzhou.aliyuncs.com&access_id=DEscLTAIStR9ccJJGQFHEaP2&access_key=bhdegy7AqfsFLj]2YpolgMjyTFVZNhK', external_protocal='oss';
+create external table oss_csv_score (
+sid     int,
+subject varchar(4),
+score   int
+) external_url='oss://external-table/px/score.csv?host=oss-cn-hangzhou.aliyuncs.com&access_id=DEscLTAIStR9ccJJGQFHEaP2&access_key=bhdegy7AqfsFLj]2YpolgMjyTFVZNhK', external_protocal='oss';
+create external table file_tok_stu (
+sid     int,
+name    varchar(32),
+cls     int
+) external_url='/home/chenbochuan.cbc/data/px/stu.tok', external_format='tok';
+create external table file_tok_teacher (
+tid        int,
+name       varchar(32),
+subject    varchar(4)
+) external_url='/home/chenbochuan.cbc/data/px/teacher.tok', external_format='tok';
+create external table file_tok_score (
+sid     int,
+subject varchar(4),
+score   int
+) external_url='/home/chenbochuan.cbc/data/px/score.tok', external_format='tok';
+create external table oss_tok_stu (
+sid     int,
+name    varchar(32),
+cls     int
+) external_url='oss://external-table/px/stu.tok?host=oss-cn-hangzhou.aliyuncs.com&access_id=DEscLTAIStR9ccJJGQFHEaP2&access_key=bhdegy7AqfsFLj]2YpolgMjyTFVZNhK', external_protocal='oss', external_format='tok';
+create external table oss_tok_teacher (
+tid        int,
+name       varchar(32),
+subject    varchar(4)
+) external_url='oss://external-table/px/teacher.tok?host=oss-cn-hangzhou.aliyuncs.com&access_id=DEscLTAIStR9ccJJGQFHEaP2&access_key=bhdegy7AqfsFLj]2YpolgMjyTFVZNhK', external_protocal='oss', external_format='tok';
+create external table oss_tok_score (
+sid     int,
+subject varchar(4),
+score   int
+) external_url='oss://external-table/px/score.tok?host=oss-cn-hangzhou.aliyuncs.com&access_id=DEscLTAIStR9ccJJGQFHEaP2&access_key=bhdegy7AqfsFLj]2YpolgMjyTFVZNhK', external_protocal='oss', external_format='tok';
+select * from file_csv_score;
+sid	subject	score
+11	'EN'	60
+12	'EN'	70
+13	'EN'	80
+21	'EN'	58
+22	'EN'	90
+31	'EN'	80
+41	'EN'	80
+42	'EN'	90
+51	'EN'	89
+52	'EN'	99
+61	'EN'	100
+62	'EN'	90
+63	'EN'	99
+64	'EN'	87
+11	'MA'	60
+12	'MA'	70
+13	'MA'	80
+21	'MA'	58
+22	'MA'	90
+31	'MA'	80
+41	'MA'	80
+42	'MA'	90
+51	'MA'	89
+52	'MA'	99
+61	'MA'	100
+62	'MA'	90
+63	'MA'	99
+64	'MA'	87
+select * from oss_csv_score;
+sid	subject	score
+11	'EN'	60
+12	'EN'	70
+13	'EN'	80
+21	'EN'	58
+22	'EN'	90
+31	'EN'	80
+41	'EN'	80
+42	'EN'	90
+51	'EN'	89
+52	'EN'	99
+61	'EN'	100
+62	'EN'	90
+63	'EN'	99
+64	'EN'	87
+11	'MA'	60
+12	'MA'	70
+13	'MA'	80
+21	'MA'	58
+22	'MA'	90
+31	'MA'	80
+41	'MA'	80
+42	'MA'	90
+51	'MA'	89
+52	'MA'	99
+61	'MA'	100
+62	'MA'	90
+63	'MA'	99
+64	'MA'	87
+select * from file_tok_score;
+sid	subject	score
+11	'EN'	60
+12	'EN'	70
+13	'EN'	80
+21	'EN'	58
+22	'EN'	90
+31	'EN'	80
+41	'EN'	80
+42	'EN'	90
+51	'EN'	89
+52	'EN'	99
+61	'EN'	100
+62	'EN'	90
+63	'EN'	99
+64	'EN'	87
+11	'MA'	60
+12	'MA'	70
+13	'MA'	80
+21	'MA'	58
+22	'MA'	90
+31	'MA'	80
+41	'MA'	80
+42	'MA'	90
+51	'MA'	89
+52	'MA'	99
+61	'MA'	100
+62	'MA'	90
+63	'MA'	99
+64	'MA'	87
+select * from oss_tok_score;
+sid	subject	score
+11	'EN'	60
+12	'EN'	70
+13	'EN'	80
+21	'EN'	58
+22	'EN'	90
+31	'EN'	80
+41	'EN'	80
+42	'EN'	90
+51	'EN'	89
+52	'EN'	99
+61	'EN'	100
+62	'EN'	90
+63	'EN'	99
+64	'EN'	87
+11	'MA'	60
+12	'MA'	70
+13	'MA'	80
+21	'MA'	58
+22	'MA'	90
+31	'MA'	80
+41	'MA'	80
+42	'MA'	90
+51	'MA'	89
+52	'MA'	99
+61	'MA'	100
+62	'MA'	90
+63	'MA'	99
+64	'MA'	87
+select * from file_csv_score limit 2;
+sid	subject	score
+11	'EN'	60
+12	'EN'	70
+select * from oss_csv_score limit 2;
+sid	subject	score
+11	'EN'	60
+12	'EN'	70
+select * from file_tok_score limit 2;
+sid	subject	score
+11	'EN'	60
+12	'EN'	70
+select * from oss_tok_score limit 2;
+sid	subject	score
+11	'EN'	60
+12	'EN'	70
+select * from file_csv_score limit 2,2;
+sid	subject	score
+13	'EN'	80
+21	'EN'	58
+select * from oss_csv_score limit 2,2;
+sid	subject	score
+13	'EN'	80
+21	'EN'	58
+select * from file_tok_score limit 2,2;
+sid	subject	score
+13	'EN'	80
+21	'EN'	58
+select * from oss_tok_score limit 2,2;
+sid	subject	score
+13	'EN'	80
+21	'EN'	58
+select * from file_csv_score limit 999, 2;
+sid	subject	score
+select * from oss_csv_score limit 999, 2;
+sid	subject	score
+select * from file_tok_score limit 999, 2;
+sid	subject	score
+select * from oss_tok_score limit 999, 2;
+sid	subject	score

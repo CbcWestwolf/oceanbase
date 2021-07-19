@@ -455,6 +455,8 @@ public:
   static T* find_table_schema(const uint64_t table_id, common::ObArray<T*>& table_schema_array);
   template <typename T>
   static int fill_temp_table_schema(const uint64_t tenant_id, T& result, ObTableSchema& table_schema);
+  template <typename T>
+  static int fill_external_table_schema(const uint64_t tenant_id, T& result, ObTableSchema& table_schema);
 
   template <typename T>
   static int retrieve_drop_tenant_infos(T& result, ObIArray<ObDropTenantInfo>& drop_tenant_infos);

@@ -147,6 +147,10 @@ public:
   {
     vt_partition_service_ = vt_partition_service;
   }
+  inline void set_et_partition_service(common::ObIDataAccessService* et_partition_service)
+  {
+    et_partition_service_ = et_partition_service;
+  }
   inline storage::ObPartitionService* get_partition_service()
   {
     return partition_service_;
@@ -154,6 +158,10 @@ public:
   inline common::ObIDataAccessService* get_vt_partition_service()
   {
     return vt_partition_service_;
+  }
+  inline common::ObIDataAccessService* get_et_partition_service()
+  {
+    return et_partition_service_;
   }
   inline obrpc::ObSrvRpcProxy* get_srv_rpc()
   {
@@ -290,6 +298,7 @@ public:
   share::schema::ObMultiVersionSchemaService* schema_service_;
   storage::ObPartitionService* partition_service_;
   common::ObIDataAccessService* vt_partition_service_;
+  common::ObIDataAccessService* et_partition_service_;
   // END global singleton
 
   DISALLOW_COPY_AND_ASSIGN(ObTaskExecutorCtx);

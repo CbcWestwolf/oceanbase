@@ -1,0 +1,20 @@
+--source mysql_test/test_suite/external_table/include/load_px_data.inc
+
+--sorted_result
+select * from file_csv_stu, file_csv_score where file_csv_stu.sid = file_csv_score.sid and file_csv_stu.sid < 12;
+--sorted_result
+select * from oss_csv_stu, oss_csv_score where oss_csv_stu.sid = oss_csv_score.sid and oss_csv_stu.sid < 12;
+--sorted_result
+select * from file_tok_stu, file_tok_score where file_tok_stu.sid = file_tok_score.sid and file_tok_stu.sid < 12;
+--sorted_result
+select * from oss_tok_stu, oss_tok_score where oss_tok_stu.sid = oss_tok_score.sid and oss_tok_stu.sid < 12;
+
+
+--sorted_result
+select * from file_csv_score, file_csv_teacher where file_csv_teacher.subject = file_csv_score.subject and file_csv_teacher.tid = 1;
+--sorted_result
+select * from oss_csv_score, oss_csv_teacher where oss_csv_teacher.subject = oss_csv_score.subject and oss_csv_teacher.tid = 1;
+--sorted_result
+select * from file_tok_score, file_tok_teacher where file_tok_teacher.subject = file_tok_score.subject and file_tok_teacher.tid = 1;
+--sorted_result
+select * from oss_tok_score, oss_tok_teacher where oss_tok_teacher.subject = oss_tok_score.subject and oss_tok_teacher.tid = 1;

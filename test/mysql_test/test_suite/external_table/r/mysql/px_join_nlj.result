@@ -1,0 +1,145 @@
+set ob_query_timeout=1000000000;
+drop database if exists et_test;
+create database et_test;
+use et_test;
+set recyclebin = 0;
+create external table file_csv_stu (
+sid     int,
+name    varchar(32),
+cls     int
+) external_url='/home/chenbochuan.cbc/data/px/stu.csv';
+create external table file_csv_teacher (
+tid        int,
+name       varchar(32),
+subject    varchar(4)
+) external_url='/home/chenbochuan.cbc/data/px/teacher.csv';
+create external table file_csv_score (
+sid     int,
+subject varchar(4),
+score   int
+) external_url='/home/chenbochuan.cbc/data/px/score.csv';
+create external table oss_csv_stu (
+sid     int,
+name    varchar(32),
+cls     int
+) external_url='oss://external-table/px/stu.csv?host=oss-cn-hangzhou.aliyuncs.com&access_id=DEscLTAIStR9ccJJGQFHEaP2&access_key=bhdegy7AqfsFLj]2YpolgMjyTFVZNhK', external_protocal='oss';
+create external table oss_csv_teacher (
+tid        int,
+name       varchar(32),
+subject    varchar(4)
+) external_url='oss://external-table/px/teacher.csv?host=oss-cn-hangzhou.aliyuncs.com&access_id=DEscLTAIStR9ccJJGQFHEaP2&access_key=bhdegy7AqfsFLj]2YpolgMjyTFVZNhK', external_protocal='oss';
+create external table oss_csv_score (
+sid     int,
+subject varchar(4),
+score   int
+) external_url='oss://external-table/px/score.csv?host=oss-cn-hangzhou.aliyuncs.com&access_id=DEscLTAIStR9ccJJGQFHEaP2&access_key=bhdegy7AqfsFLj]2YpolgMjyTFVZNhK', external_protocal='oss';
+create external table file_tok_stu (
+sid     int,
+name    varchar(32),
+cls     int
+) external_url='/home/chenbochuan.cbc/data/px/stu.tok', external_format='tok';
+create external table file_tok_teacher (
+tid        int,
+name       varchar(32),
+subject    varchar(4)
+) external_url='/home/chenbochuan.cbc/data/px/teacher.tok', external_format='tok';
+create external table file_tok_score (
+sid     int,
+subject varchar(4),
+score   int
+) external_url='/home/chenbochuan.cbc/data/px/score.tok', external_format='tok';
+create external table oss_tok_stu (
+sid     int,
+name    varchar(32),
+cls     int
+) external_url='oss://external-table/px/stu.tok?host=oss-cn-hangzhou.aliyuncs.com&access_id=DEscLTAIStR9ccJJGQFHEaP2&access_key=bhdegy7AqfsFLj]2YpolgMjyTFVZNhK', external_protocal='oss', external_format='tok';
+create external table oss_tok_teacher (
+tid        int,
+name       varchar(32),
+subject    varchar(4)
+) external_url='oss://external-table/px/teacher.tok?host=oss-cn-hangzhou.aliyuncs.com&access_id=DEscLTAIStR9ccJJGQFHEaP2&access_key=bhdegy7AqfsFLj]2YpolgMjyTFVZNhK', external_protocal='oss', external_format='tok';
+create external table oss_tok_score (
+sid     int,
+subject varchar(4),
+score   int
+) external_url='oss://external-table/px/score.tok?host=oss-cn-hangzhou.aliyuncs.com&access_id=DEscLTAIStR9ccJJGQFHEaP2&access_key=bhdegy7AqfsFLj]2YpolgMjyTFVZNhK', external_protocal='oss', external_format='tok';
+select * from file_csv_stu, file_csv_score where file_csv_stu.sid = file_csv_score.sid and file_csv_stu.sid < 12;
+sid	name	cls	sid	subject	score
+11	'a1'	1	11	'EN'	60
+11	'a1'	1	11	'MA'	60
+select * from oss_csv_stu, oss_csv_score where oss_csv_stu.sid = oss_csv_score.sid and oss_csv_stu.sid < 12;
+sid	name	cls	sid	subject	score
+11	'a1'	1	11	'EN'	60
+11	'a1'	1	11	'MA'	60
+select * from file_tok_stu, file_tok_score where file_tok_stu.sid = file_tok_score.sid and file_tok_stu.sid < 12;
+sid	name	cls	sid	subject	score
+11	'a1'	1	11	'EN'	60
+11	'a1'	1	11	'MA'	60
+select * from oss_tok_stu, oss_tok_score where oss_tok_stu.sid = oss_tok_score.sid and oss_tok_stu.sid < 12;
+sid	name	cls	sid	subject	score
+11	'a1'	1	11	'EN'	60
+11	'a1'	1	11	'MA'	60
+select * from file_csv_score, file_csv_teacher where file_csv_teacher.subject = file_csv_score.subject and file_csv_teacher.tid = 1;
+sid	subject	score	tid	name	subject
+11	'EN'	60	1	'MissZhang'	'EN'
+12	'EN'	70	1	'MissZhang'	'EN'
+13	'EN'	80	1	'MissZhang'	'EN'
+21	'EN'	58	1	'MissZhang'	'EN'
+22	'EN'	90	1	'MissZhang'	'EN'
+31	'EN'	80	1	'MissZhang'	'EN'
+41	'EN'	80	1	'MissZhang'	'EN'
+42	'EN'	90	1	'MissZhang'	'EN'
+51	'EN'	89	1	'MissZhang'	'EN'
+52	'EN'	99	1	'MissZhang'	'EN'
+61	'EN'	100	1	'MissZhang'	'EN'
+62	'EN'	90	1	'MissZhang'	'EN'
+63	'EN'	99	1	'MissZhang'	'EN'
+64	'EN'	87	1	'MissZhang'	'EN'
+select * from oss_csv_score, oss_csv_teacher where oss_csv_teacher.subject = oss_csv_score.subject and oss_csv_teacher.tid = 1;
+sid	subject	score	tid	name	subject
+11	'EN'	60	1	'MissZhang'	'EN'
+12	'EN'	70	1	'MissZhang'	'EN'
+13	'EN'	80	1	'MissZhang'	'EN'
+21	'EN'	58	1	'MissZhang'	'EN'
+22	'EN'	90	1	'MissZhang'	'EN'
+31	'EN'	80	1	'MissZhang'	'EN'
+41	'EN'	80	1	'MissZhang'	'EN'
+42	'EN'	90	1	'MissZhang'	'EN'
+51	'EN'	89	1	'MissZhang'	'EN'
+52	'EN'	99	1	'MissZhang'	'EN'
+61	'EN'	100	1	'MissZhang'	'EN'
+62	'EN'	90	1	'MissZhang'	'EN'
+63	'EN'	99	1	'MissZhang'	'EN'
+64	'EN'	87	1	'MissZhang'	'EN'
+select * from file_tok_score, file_tok_teacher where file_tok_teacher.subject = file_tok_score.subject and file_tok_teacher.tid = 1;
+sid	subject	score	tid	name	subject
+11	'EN'	60	1	'MissZhang'	'EN'
+12	'EN'	70	1	'MissZhang'	'EN'
+13	'EN'	80	1	'MissZhang'	'EN'
+21	'EN'	58	1	'MissZhang'	'EN'
+22	'EN'	90	1	'MissZhang'	'EN'
+31	'EN'	80	1	'MissZhang'	'EN'
+41	'EN'	80	1	'MissZhang'	'EN'
+42	'EN'	90	1	'MissZhang'	'EN'
+51	'EN'	89	1	'MissZhang'	'EN'
+52	'EN'	99	1	'MissZhang'	'EN'
+61	'EN'	100	1	'MissZhang'	'EN'
+62	'EN'	90	1	'MissZhang'	'EN'
+63	'EN'	99	1	'MissZhang'	'EN'
+64	'EN'	87	1	'MissZhang'	'EN'
+select * from oss_tok_score, oss_tok_teacher where oss_tok_teacher.subject = oss_tok_score.subject and oss_tok_teacher.tid = 1;
+sid	subject	score	tid	name	subject
+11	'EN'	60	1	'MissZhang'	'EN'
+12	'EN'	70	1	'MissZhang'	'EN'
+13	'EN'	80	1	'MissZhang'	'EN'
+21	'EN'	58	1	'MissZhang'	'EN'
+22	'EN'	90	1	'MissZhang'	'EN'
+31	'EN'	80	1	'MissZhang'	'EN'
+41	'EN'	80	1	'MissZhang'	'EN'
+42	'EN'	90	1	'MissZhang'	'EN'
+51	'EN'	89	1	'MissZhang'	'EN'
+52	'EN'	99	1	'MissZhang'	'EN'
+61	'EN'	100	1	'MissZhang'	'EN'
+62	'EN'	90	1	'MissZhang'	'EN'
+63	'EN'	99	1	'MissZhang'	'EN'
+64	'EN'	87	1	'MissZhang'	'EN'

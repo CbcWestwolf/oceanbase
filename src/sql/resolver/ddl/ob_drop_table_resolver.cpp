@@ -61,9 +61,14 @@ int ObDropTableResolver::resolve(const ParseNode& parse_tree)
 
     if (OB_FAIL(ret)) {
     } else if (T_DROP_TABLE == parse_tree.type_) {
-      if (NULL != parse_tree.children_[MATERIALIZED_NODE] &&
-          T_TEMPORARY == parse_tree.children_[MATERIALIZED_NODE]->type_) {
-        drop_table_arg.table_type_ = share::schema::TMP_TABLE;
+      if (NULL != parse_tree.children_[MATERIALIZED_NODE]) {
+        if (T_TEMPORARY == parse_tree.children_[MATERIALIZED_NODE]->type_) {
+          drop_table_arg.table_type_ = share::schema::TMP_TABLE;
+        } else if (T_EXTERNAL == parse_tree.children_[MATERIALIZED_NODE]->type_) {
+          drop_table_arg.table_type_ = share::schema::EXTERNAL_TABLE;
+        } else {
+          SQL_RESV_LOG(WARN, "Unknown table type", K_(drop_table_arg.table_type), K(ret));
+        }
       } else {
         drop_table_arg.table_type_ = share::schema::USER_TABLE;
         if (share::is_oracle_mode()) {

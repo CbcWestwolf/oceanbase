@@ -976,6 +976,55 @@ int ObSchemaRetrieveUtils::fill_temp_table_schema(const uint64_t tenant_id, T& r
 }
 
 template <typename T>
+int ObSchemaRetrieveUtils::fill_external_table_schema(const uint64_t tenant_id, T& result, ObTableSchema& table_schema)
+{
+  int ret = common::OB_SUCCESS;
+  UNUSED(tenant_id);
+  ObString create_host;
+  ObString external_url;
+  ObString external_protocal;
+  ObString external_format;
+  ObString line_delimiter;
+  ObString field_delimiter;
+  ObString default_create_host("");
+  EXTRACT_VARCHAR_FIELD_MYSQL_WITH_DEFAULT_VALUE(
+      result, "create_host", create_host, true, ObSchemaService::g_ignore_column_retrieve_error_, default_create_host);
+  EXTRACT_VARCHAR_FIELD_MYSQL(result, "external_url", external_url);
+  EXTRACT_VARCHAR_FIELD_MYSQL(result, "external_protocal", external_protocal);
+  EXTRACT_VARCHAR_FIELD_MYSQL(result, "external_format", external_format);
+  EXTRACT_VARCHAR_FIELD_MYSQL(result, "line_delimiter", line_delimiter);
+  EXTRACT_VARCHAR_FIELD_MYSQL(result, "field_delimiter", field_delimiter);
+  if (0 >= create_host.length()) {
+    ret = OB_ERR_UNEXPECTED;
+    SHARE_SCHEMA_LOG(WARN, "get unexpected create_host. ", K(ret), K(create_host));
+  } else if (0 >= external_url.length()) {
+    ret = OB_ERR_UNEXPECTED;
+    SHARE_SCHEMA_LOG(WARN, "get unexpected external_url. ", K(ret), K(external_url));
+  } else if (0 >= field_delimiter.length()) {
+    ret = OB_ERR_UNEXPECTED;
+    SHARE_SCHEMA_LOG(WARN, "get unexpected field_delimiter. ", K(ret), K(field_delimiter));
+  } else if (0 >= line_delimiter.length()) {
+    ret = OB_ERR_UNEXPECTED;
+    SHARE_SCHEMA_LOG(WARN, "get unexpected line_delimiter. ", K(ret), K(line_delimiter));
+  } else if (0 >= external_protocal.length()) {
+    ret = OB_ERR_UNEXPECTED;
+    SHARE_SCHEMA_LOG(WARN, "get unexpected external_protocal. ", K(ret), K(external_protocal));
+  } else if (0 >= external_format.length()) {
+    ret = OB_ERR_UNEXPECTED;
+    SHARE_SCHEMA_LOG(WARN, "get unexpected external_format. ", K(ret), K(external_format));
+  } else {
+    table_schema.set_create_host(create_host);
+    table_schema.set_external_url(external_url);
+    table_schema.set_external_protocal(external_protocal);
+    table_schema.set_external_format(external_format);
+    table_schema.set_line_delimiter(line_delimiter);
+    table_schema.set_field_delimiter(field_delimiter);
+  }
+  SHARE_SCHEMA_LOG(INFO, "Get create_host ", K(create_host), K(table_schema));
+  return ret;
+}
+
+template <typename T>
 int ObSchemaRetrieveUtils::fill_table_schema(
     const uint64_t tenant_id, const bool check_deleted, T& result, ObTableSchema& table_schema, bool& is_deleted)
 {

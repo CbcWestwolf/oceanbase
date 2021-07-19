@@ -127,6 +127,7 @@ ObServer::ObServer()
       procor_(net_frame_.get_xlator(), self_addr_),
       multi_tenant_(procor_),
       vt_data_service_(root_service_, self_addr_, &config_),
+      et_data_service_(root_service_, self_addr_, &config_),
       cache_size_calculator_(),
       weak_read_service_(),
       cgroup_ctrl_(),
@@ -1358,6 +1359,7 @@ int ObServer::init_sql()
             net_frame_.get_req_transport(),
             &ObPartitionService::get_instance(),
             &vt_data_service_,
+            &et_data_service_,
             &location_cache_,
             self_addr_,
             rs_mgr_))) {

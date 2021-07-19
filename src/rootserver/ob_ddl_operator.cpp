@@ -8775,6 +8775,24 @@ int ObDDLOperator::insert_temp_table_info(ObMySQLTransaction& trans, const ObTab
   return ret;
 }
 
+int ObDDLOperator::insert_external_table_info(ObMySQLTransaction& trans, const ObTableSchema& table_schema)
+{
+  int ret = OB_SUCCESS;
+  ObSchemaService* schema_service = schema_service_.get_schema_service();
+  if (OB_ISNULL(schema_service)) {
+    ret = OB_ERR_UNEXPECTED;
+    LOG_WARN("get invalid schema service", K(ret));
+  } else if (false == table_schema.is_external_table()) {
+    // do nothing...
+  } else if (is_inner_table(table_schema.get_table_id())) {
+    ret = OB_OP_NOT_ALLOW;
+    LOG_WARN("create external sys table not allowed", K(ret), "table_id", table_schema.get_table_id());
+  } else if (OB_FAIL(schema_service->get_table_sql_service().insert_external_table_info(trans, table_schema))) {
+    LOG_WARN("insert_external_table_info failed", K(ret));
+  }
+  return ret;
+}
+
 int ObDDLOperator::check_is_change_column_type(const share::schema::ObColumnSchemaV2& src_column,
     const share::schema::ObColumnSchemaV2& dst_column, bool& is_change_column_type)
 {

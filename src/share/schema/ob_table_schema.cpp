@@ -99,7 +99,12 @@ ObSimpleTableSchemaV2::ObSimpleTableSchemaV2(ObIAllocator* allocator)
       simple_foreign_key_info_array_(OB_MALLOC_NORMAL_BLOCK_SIZE, ModulePageAllocator(*allocator)),
       simple_constraint_info_array_(OB_MALLOC_NORMAL_BLOCK_SIZE, ModulePageAllocator(*allocator)),
       zone_replica_attr_array_(),
-      primary_zone_array_()
+      primary_zone_array_(),
+      external_url_(),
+      external_protocal_(),
+      external_format_(),
+      line_delimiter_(),
+      field_delimiter_()
 {
   reset();
 }
@@ -162,6 +167,16 @@ int ObSimpleTableSchemaV2::assign(const ObSimpleTableSchemaV2& other)
         LOG_WARN("fail to deep copy encrypt str", K(ret));
       } else if (OB_FAIL(deep_copy_str(other.link_database_name_, link_database_name_))) {
         LOG_WARN("Fail to deep copy database_name", K(ret));
+      } else if (OB_FAIL(deep_copy_str(other.external_url_, external_url_))) {
+        LOG_WARN("Fail to deep copy external_url", K(ret));
+      } else if (OB_FAIL(deep_copy_str(other.external_protocal_, external_protocal_))) {
+        LOG_WARN("Fail to deep copy external_protocal", K(ret));
+      } else if (OB_FAIL(deep_copy_str(other.external_format_, external_format_))) {
+        LOG_WARN("Fail to deep copy external_format", K(ret));
+      } else if (OB_FAIL(deep_copy_str(other.line_delimiter_, line_delimiter_))) {
+        LOG_WARN("Fail to deep copy line_delimiter", K(ret));
+      } else if (OB_FAIL(deep_copy_str(other.field_delimiter_, field_delimiter_))) {
+        LOG_WARN("Fail to deep copy field_delimiter", K(ret));
       } else if (OB_FAIL(generate_mapping_pg_partition_array())) {
         // This method depends on binding_ and needs to be called after binding_ is assigned
         LOG_WARN("fail to generate mapping pg partition array", K(ret));
@@ -276,7 +291,9 @@ bool ObSimpleTableSchemaV2::operator==(const ObSimpleTableSchemaV2& other) const
       encrypt_key_ == other.encrypt_key_ && master_key_id_ == other.master_key_id_ &&
       drop_schema_version_ == other.drop_schema_version_ && dblink_id_ == other.dblink_id_ &&
       link_table_id_ == other.link_table_id_ && link_schema_version_ == other.link_schema_version_ &&
-      link_database_name_ == other.link_database_name_) {
+      link_database_name_ == other.link_database_name_ && external_url_ == other.external_url_ &&
+      field_delimiter_ == other.field_delimiter_ && line_delimiter_ == other.line_delimiter_ &&
+      external_protocal_ == other.external_protocal_ && external_format_ == other.external_format_) {
     ret = true;
     for (int64_t i = 0; ret && i < zone_list_.count(); ++i) {
       const ObString& zone_ptr = zone_list_.at(i);
@@ -347,6 +364,11 @@ void ObSimpleTableSchemaV2::reset()
   tablegroup_id_ = OB_INVALID_ID;
   data_table_id_ = 0;
   table_name_.reset();
+  external_url_.reset();
+  field_delimiter_.reset();
+  line_delimiter_.reset();
+  external_protocal_.reset();
+  external_format_.reset();
   origin_index_name_.reset();
   name_case_mode_ = OB_NAME_CASE_INVALID;
   table_type_ = USER_TABLE;
@@ -4410,7 +4432,12 @@ OB_DEF_SERIALIZE(ObTableSchema)
       primary_zone_,
       index_using_type_,
       progressive_merge_round_,
-      storage_format_version_);
+      storage_format_version_,
+      external_url_,
+      external_protocal_,
+      external_format_,
+      line_delimiter_,
+      field_delimiter_);
 
   if (!OB_SUCC(ret)) {
     LOG_WARN("Fail to serialize fixed length data", K(ret));
@@ -4622,6 +4649,11 @@ OB_DEF_DESERIALIZE(ObTableSchema)
   ObString compress_func_name;
   ObString expire_info;
   ObString primary_zone;
+  ObString external_url;
+  ObString external_protocal;
+  ObString external_format;
+  ObString field_delimiter;
+  ObString line_delimiter;
   int64_t index_cnt;
 
   LST_DO_CODE(OB_UNIS_DECODE,
@@ -4667,7 +4699,12 @@ OB_DEF_DESERIALIZE(ObTableSchema)
       primary_zone,
       index_using_type_,
       progressive_merge_round_,
-      storage_format_version_);
+      storage_format_version_,
+      external_url,
+      external_protocal,
+      external_format,
+      line_delimiter,
+      field_delimiter);
 
   if (OB_FAIL(ret)) {
     LOG_WARN("Fail to deserialize fixed length data", K(ret));
@@ -4682,6 +4719,16 @@ OB_DEF_DESERIALIZE(ObTableSchema)
   } else if (OB_FAIL(deep_copy_str(expire_info, expire_info_))) {
     LOG_WARN("deep_copy_str failed", K(ret));
   } else if (OB_FAIL(deep_copy_str(primary_zone, primary_zone_))) {
+    LOG_WARN("deep_copy_str failed", K(ret));
+  } else if (OB_FAIL(deep_copy_str(external_url, external_url_))) {
+    LOG_WARN("deep_copy_str failed", K(ret));
+  } else if (OB_FAIL(deep_copy_str(external_protocal, external_protocal_))) {
+    LOG_WARN("deep_copy_str failed", K(ret));
+  } else if (OB_FAIL(deep_copy_str(external_format, external_format_))) {
+    LOG_WARN("deep_copy_str failed", K(ret));
+  } else if (OB_FAIL(deep_copy_str(line_delimiter, line_delimiter_))) {
+    LOG_WARN("deep_copy_str failed", K(ret));
+  } else if (OB_FAIL(deep_copy_str(field_delimiter, field_delimiter_))) {
     LOG_WARN("deep_copy_str failed", K(ret));
   } else if (OB_FAIL(deserialize_string_array(buf, data_len, pos, zone_list_))) {
     LOG_WARN("deserialize_string_array failed", K(ret));
@@ -4931,7 +4978,12 @@ OB_DEF_SERIALIZE_SIZE(ObTableSchema)
       tablespace_id_,
       encrypt_key_,
       master_key_id_,
-      drop_schema_version_);
+      drop_schema_version_,
+      external_url_,
+      external_protocal_,
+      external_format_,
+      line_delimiter_,
+      field_delimiter_);
 
   len += table_mode_.get_serialize_size();
   len += get_string_array_serialize_size(zone_list_);

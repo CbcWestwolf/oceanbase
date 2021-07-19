@@ -1,0 +1,10 @@
+--source mysql_test/test_suite/external_table/include/load_px_data.inc
+
+--sorted_result
+select * from file_csv_stu, file_csv_score where file_csv_stu.sid = file_csv_score.sid order by file_csv_score.score;
+--sorted_result
+select * from oss_csv_stu, oss_csv_score where oss_csv_stu.sid = oss_csv_score.sid order by oss_csv_score.score;
+--sorted_result
+select * from file_tok_stu, file_tok_score where file_tok_stu.sid = file_tok_score.sid order by file_tok_score.score;
+--sorted_result
+select * from oss_tok_stu, oss_tok_score where oss_tok_stu.sid = oss_tok_score.sid order by oss_tok_score.score;

@@ -1219,6 +1219,7 @@ int ObSchemaGetterGuard::get_table_schema(uint64_t table_id, const ObTableSchema
   int ret = OB_SUCCESS;
   const ObTableSchema* orig_table = NULL;
   uint64_t base_table_id = OB_INVALID_ID;
+  LOG_DEBUG("begin to get table schema", K(table_id), K(snapshot_version_), K(lbt()));
   if (share::is_oracle_mode() && sql::ObSQLMockSchemaUtils::is_mock_index(table_id, base_table_id)) {
     const ObTableSchema* base_table_schema = NULL;
     if (OB_FAIL(get_table_schema(base_table_id, base_table_schema))) {
@@ -1229,6 +1230,7 @@ int ObSchemaGetterGuard::get_table_schema(uint64_t table_id, const ObTableSchema
     } else if (OB_FAIL(sql::ObSQLMockSchemaUtils::mock_rowid_index(base_table_schema, table_schema))) {
       LOG_WARN("failed to mock rowid index table schema", K(ret));
     }
+    LOG_DEBUG("get table schema after mock", K(table_id), K(snapshot_version_), K(lbt()));
   } else if (OB_FAIL(get_table_schema_inner(table_id, orig_table))) {
     LOG_WARN("fail to get table schema", KR(ret), K(table_id));
   } else if (OB_ISNULL(orig_table)) {

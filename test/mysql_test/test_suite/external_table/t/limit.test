@@ -1,0 +1,21 @@
+--source mysql_test/test_suite/external_table/include/load_px_data.inc
+
+select * from file_csv_score;
+select * from oss_csv_score;
+select * from file_tok_score;
+select * from oss_tok_score;
+
+select * from file_csv_score limit 2;
+select * from oss_csv_score limit 2;
+select * from file_tok_score limit 2;
+select * from oss_tok_score limit 2;
+
+select * from file_csv_score limit 2,2;
+select * from oss_csv_score limit 2,2;
+select * from file_tok_score limit 2,2;
+select * from oss_tok_score limit 2,2;
+
+select * from file_csv_score limit 999, 2;
+select * from oss_csv_score limit 999, 2;
+select * from file_tok_score limit 999, 2;
+select * from oss_tok_score limit 999, 2;

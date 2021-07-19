@@ -563,6 +563,10 @@ public:
   {
     return TMP_TABLE == table_type_ || TMP_TABLE_ORA_SESS == table_type_ || TMP_TABLE_ORA_TRX == table_type_;
   }
+  inline bool is_external_table() const
+  {
+    return EXTERNAL_TABLE == table_type_;
+  }
   inline bool is_mysql_tmp_table() const
   {
     return TMP_TABLE == table_type_;
@@ -715,6 +719,46 @@ public:
   {
     master_key_id_ = id;
   }
+  inline const common::ObString& get_external_url() const
+  {
+    return external_url_;
+  }
+  inline int set_external_url(const common::ObString& external_url)
+  {
+    return deep_copy_str(external_url, external_url_);
+  }
+  inline const common::ObString& get_external_protocal() const
+  {
+    return external_protocal_;
+  }
+  inline int set_external_protocal(const common::ObString& external_protocal)
+  {
+    return deep_copy_str(external_protocal, external_protocal_);
+  }
+  inline const common::ObString& get_external_format() const
+  {
+    return external_format_;
+  }
+  inline int set_external_format(const common::ObString& external_format)
+  {
+    return deep_copy_str(external_format, external_format_);
+  }
+  inline const common::ObString& get_line_delimiter() const
+  {
+    return line_delimiter_;
+  }
+  inline int set_line_delimiter(const common::ObString& line_delimiter)
+  {
+    return deep_copy_str(line_delimiter, line_delimiter_);
+  }
+  inline const common::ObString& get_field_delimiter() const
+  {
+    return field_delimiter_;
+  }
+  inline int set_field_delimiter(const common::ObString& field_delimiter)
+  {
+    return deep_copy_str(field_delimiter, field_delimiter_);
+  }
   inline int set_encrypt_key(const common::ObString& key)
   {
     return deep_copy_str(key, encrypt_key_);
@@ -791,6 +835,11 @@ protected:
   common::ObSEArray<ObZoneScore, common::OB_MAX_MEMBER_NUMBER, common::ObNullAllocator> primary_zone_array_;
   common::ObString encrypt_key_;
   uint64_t master_key_id_;
+  common::ObString external_url_;
+  common::ObString external_protocal_;
+  common::ObString external_format_;
+  common::ObString line_delimiter_;
+  common::ObString field_delimiter_;
 
   // dblink.
   // No serialization required

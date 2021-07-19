@@ -2240,7 +2240,7 @@ int ObDDLService::create_tables_in_trans(const bool if_not_exist, const ObString
             LOG_WARN("fail to print_view_expanded_definition", K(ret), K(table_schema.get_table_id()));
           }
         }
-        // create or replace view xxx
+        // create or replace view or external table xxx
         if (OB_FAIL(ret)) {
         } else if (table_schema.is_view_table() && if_not_exist) {
           const ObString& view_name = table_schema.get_table_name();
@@ -2259,6 +2259,23 @@ int ObDDLService::create_tables_in_trans(const bool if_not_exist, const ObString
               LOG_WARN("failed to drop old view schema", K(ret));
             }
           }
+        } else if (table_schema.is_external_table() && if_not_exist) {
+          const ObString& ext_table_name = table_schema.get_table_name();
+          const ObTableSchema* old_ext_table_name = NULL;
+          if (OB_FAIL(schema_guard.get_table_schema(table_schema.get_tenant_id(),
+                  table_schema.get_database_id(),
+                  ext_table_name,
+                  false,  // is index
+                  old_ext_table_name))) {
+            LOG_WARN("failed to get table schema", K(ext_table_name), K(ret));
+          }
+          if (OB_ISNULL(old_ext_table_name)) {
+            ret = OB_SUCCESS;
+          } else {
+            if (OB_FAIL(ddl_operator.drop_table(*old_ext_table_name, trans))) {
+              LOG_WARN("failed to drop old external table schema", K(ret));
+            }
+          }
         }
       }
       RS_TRACE(operator_create_table_begin);
@@ -2268,6 +2285,8 @@ int ObDDLService::create_tables_in_trans(const bool if_not_exist, const ObString
           LOG_WARN("failed to create table schema, ", K(ret));
         } else if (OB_FAIL(ddl_operator.insert_temp_table_info(trans, table_schemas.at(i)))) {
           LOG_WARN("failed to insert_temp_table_info!", K(ret));
+        } else if (OB_FAIL(ddl_operator.insert_external_table_info(trans, table_schemas.at(i)))) {
+          LOG_WARN("failed to insert_external_table_info!", K(ret));
         }
       }
       // Create a new indexed system table needs to write a schema
@@ -2444,6 +2463,8 @@ int ObDDLService::create_table_in_trans(ObTableSchema& table_schema, const int64
       LOG_WARN("failed to create table schema, ", KR(ret));
     } else if (OB_FAIL(ddl_operator.insert_temp_table_info(trans, table_schema))) {
       LOG_WARN("failed to insert temp table info!", KR(ret));
+    } else if (OB_FAIL(ddl_operator.insert_external_table_info(trans, table_schema))) {
+      LOG_WARN("failed to insert external table info!", KR(ret));
     } else {
       LOG_INFO("succeed to insert table schema in schema tables",
           K(table_schema.get_tenant_id()),

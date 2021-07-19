@@ -761,6 +761,12 @@ const char* get_type_name(int type)
 	case T_ALTER_TABLEGROUP : return "T_ALTER_TABLEGROUP";
 	case T_DEFAULT_TABLEGROUP : return "T_DEFAULT_TABLEGROUP";
 	case T_TEMPORARY : return "T_TEMPORARY";
+	case T_EXTERNAL : return "T_EXTERNAL";
+	case T_EXTERNAL_URL : return "T_EXTERNAL_URL";
+	case T_EXTERNAL_PROTOCAL : return "T_EXTERNAL_PROTOCAL";
+	case T_EXTERNAL_FORMAT : return "T_EXTERNAL_FORMAT";
+	case T_LINE_DELIMITER : return "T_LINE_DELIMITER";
+	case T_FIELD_DELIMITER : return "T_FIELD_DELIMITER";
 	case T_ALTER_SYSTEM : return "T_ALTER_SYSTEM";
 	case T_CHANGE_OBI : return "T_CHANGE_OBI";
 	case T_FORCE : return "T_FORCE";

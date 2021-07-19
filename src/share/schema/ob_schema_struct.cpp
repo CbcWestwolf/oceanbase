@@ -10182,7 +10182,7 @@ ObRecycleObject::RecycleObjType ObRecycleObject::get_type_by_table_schema(const 
     type = INDEX;
   } else if (table_schema.is_view_table()) {
     type = VIEW;
-  } else if (table_schema.is_table() || table_schema.is_tmp_table()) {
+  } else if (table_schema.is_table() || table_schema.is_tmp_table() || table_schema.is_external_table()) {
     type = TABLE;
   } else {
     type = INVALID;

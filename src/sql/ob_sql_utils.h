@@ -226,6 +226,8 @@ public:
   static int wrap_expr_ctx(const stmt::StmtType& stmt_type, ObExecContext& exec_ctx, common::ObIAllocator& allocator,
       common::ObExprCtx& expr_ctx);
 
+  static int get_partition_service(
+      ObTaskExecutorCtx& executor_ctx, int64_t table_id, ObIDataAccessService*& das, bool use_external);
   static int get_partition_service(ObTaskExecutorCtx& executor_ctx, int64_t table_id, ObIDataAccessService*& das);
   /*static int calculate_phy_table_location(ObExecContext &exec_ctx,
                                           ObPartMgr *part_mgr,

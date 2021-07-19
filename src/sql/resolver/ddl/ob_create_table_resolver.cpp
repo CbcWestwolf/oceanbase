@@ -306,6 +306,41 @@ int ObCreateTableResolver::set_temp_table_info(ObTableSchema& table_schema, Pars
   return ret;
 }
 
+int ObCreateTableResolver::set_external_table_info(ObTableSchema& table_schema)
+{
+  int ret = OB_SUCCESS;
+
+  if (OB_ISNULL(external_protocal_) || external_protocal_.empty()) {
+    external_protocal_ = "file";
+  }
+  if (OB_ISNULL(external_format_) || external_format_.empty()) {
+    external_format_ = "csv";
+  }
+  if (OB_ISNULL(line_delimiter_) || line_delimiter_.empty()) {
+    line_delimiter_ = "\n";
+  }
+  if (OB_ISNULL(field_delimiter_) || field_delimiter_.empty()) {
+    field_delimiter_ = ",";
+  }
+  if (OB_FAIL(set_table_name(table_name_))) {
+    LOG_WARN("failed to set table name", K(ret), K(table_name_));
+  } else if (external_url_.empty() || OB_FAIL(table_schema.set_external_url(external_url_))) {
+    LOG_WARN("failed to set external url", K(ret), K(external_url_));
+  } else if (field_delimiter_.empty() || OB_FAIL(table_schema.set_field_delimiter(field_delimiter_))) {
+    LOG_WARN("failed to set field delimiters", K(ret), K(field_delimiter_));
+  } else if (line_delimiter_.empty() || OB_FAIL(table_schema.set_line_delimiter(line_delimiter_))) {
+    LOG_WARN("failed to set field delimiters", K(ret), K(line_delimiter_));
+  } else if (external_protocal_.empty() || OB_FAIL(table_schema.set_external_protocal(external_protocal_))) {
+    LOG_WARN("failed to set external protocal", K(ret), K(external_protocal_));
+  } else if (external_format_.empty() || OB_FAIL(table_schema.set_external_format(external_format_))) {
+    LOG_WARN("failed to set external format", K(ret), K(external_format_));
+  } else {
+    table_schema.set_table_type(EXTERNAL_TABLE);
+    LOG_DEBUG("resolve create external table", K(table_schema));
+  }
+  return ret;
+}
+
 int ObCreateTableResolver::add_new_column_for_oracle_temp_table(
     ObTableSchema& table_schema, ObArray<ObColumnResolveStat>& stats)
 {
@@ -424,6 +459,7 @@ int ObCreateTableResolver::resolve(const ParseNode& parse_tree)
 {
   int ret = OB_SUCCESS;
   bool is_temporary_table = false;
+  bool is_external_table = false;
   const bool is_mysql_mode = !is_oracle_mode();
   ParseNode* create_table_node = const_cast<ParseNode*>(&parse_tree);
   CHECK_COMPATIBILITY_MODE(session_info_);
@@ -448,21 +484,24 @@ int ObCreateTableResolver::resolve(const ParseNode& parse_tree)
       create_table_stmt->set_allocator(*allocator_);
       stmt_ = create_table_stmt;
     }
-    // resolve temporary option
+    // resolve temporary and external option
     if (OB_SUCC(ret)) {
       if (NULL != create_table_node->children_[0]) {
-        if (T_TEMPORARY != create_table_node->children_[0]->type_) {
+        if (T_TEMPORARY == create_table_node->children_[0]->type_) {
+          if (create_table_node->children_[5] != NULL) {
+            ret = OB_ERR_TEMPORARY_TABLE_WITH_PARTITION;
+          } else if (is_create_as_sel && is_mysql_mode) {
+            ret = OB_NOT_SUPPORTED;
+            LOG_USER_ERROR(OB_NOT_SUPPORTED, "View/Table's column refers to a temporary table");
+          } else {
+            is_temporary_table = true;
+            is_oracle_temp_table_ = (is_mysql_mode == false);
+          }
+        } else if (T_EXTERNAL == create_table_node->children_[0]->type_) {
+          is_external_table = true;
+        } else {
           ret = OB_INVALID_ARGUMENT;
           SQL_RESV_LOG(WARN, "invalid argument.", K(ret), K(create_table_node->children_[0]->type_));
-        } else if (create_table_node->children_[5] != NULL) {
-          ret = OB_ERR_TEMPORARY_TABLE_WITH_PARTITION;
-
-        } else if (is_create_as_sel && is_mysql_mode) {
-          ret = OB_NOT_SUPPORTED;
-          LOG_USER_ERROR(OB_NOT_SUPPORTED, "View/Table's column refers to a temporary table");
-        } else {
-          is_temporary_table = true;
-          is_oracle_temp_table_ = (is_mysql_mode == false);
         }
       }
     }
@@ -628,6 +667,11 @@ int ObCreateTableResolver::resolve(const ParseNode& parse_tree)
           }
         }
 
+        if (OB_SUCC(ret) && is_external_table && 0 < get_primary_key_size()) {
+          ret = OB_ERR_PARSER_SYNTAX;
+          SQL_RESV_LOG(WARN, "external table should not specify primary key", K(ret));
+        }
+
         if (OB_SUCC(ret) && 0 == get_primary_key_size() && TPKM_NEW_NO_PK != table_mode_.pk_mode_) {  // old no-pk table
           // old no-pk table, need add hidden primary key before add partition key
           if (OB_FAIL(add_hidden_primary_key())) {
@@ -663,6 +707,8 @@ int ObCreateTableResolver::resolve(const ParseNode& parse_tree)
           } else if (is_temporary_table &&
                      OB_FAIL(set_temp_table_info(table_schema, create_table_node->children_[6]))) {
             SQL_RESV_LOG(WARN, "set temp table info failed", K(ret));
+          } else if (is_external_table && OB_FAIL(set_external_table_info(table_schema))) {
+            SQL_RESV_LOG(WARN, "set external table info failed", K(ret));
           } else if (OB_FAIL(table_schema.set_table_name(table_name_))) {
             SQL_RESV_LOG(WARN, "set table name failed", K(ret));
           } else {
@@ -670,7 +716,7 @@ int ObCreateTableResolver::resolve(const ParseNode& parse_tree)
           }
           // save current host for temp table or create table as select for,
           // only the backend job of current host can drop it.
-          if (OB_SUCC(ret) && (is_temporary_table || is_create_as_sel)) {
+          if (OB_SUCC(ret) && (is_temporary_table || is_create_as_sel || is_external_table)) {
             char create_host_str[OB_MAX_HOST_NAME_LENGTH];
             MYADDR.ip_port_to_string(create_host_str, OB_MAX_HOST_NAME_LENGTH);
             table_schema.set_create_host(create_host_str);

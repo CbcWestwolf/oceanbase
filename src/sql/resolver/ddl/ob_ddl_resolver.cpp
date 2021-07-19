@@ -89,7 +89,12 @@ ObDDLResolver::ObDDLResolver(ObResolverParams& params)
       duplicate_scope_(share::ObDuplicateScope::DUPLICATE_SCOPE_NONE),
       enable_row_movement_(false),
       table_dop_(DEFAULT_TABLE_DOP),
-      hash_subpart_num_(-1)
+      hash_subpart_num_(-1),
+      external_url_(),
+      external_protocal_(),
+      external_format_(),
+      line_delimiter_(),
+      field_delimiter_()
 {
   table_mode_.reset();
 }
@@ -513,13 +518,13 @@ int ObDDLResolver::set_database_name(const ObString& database_name)
   return ret;
 }
 
-int ObDDLResolver::resolve_table_id_pre(ParseNode *node)
+int ObDDLResolver::resolve_table_id_pre(ParseNode* node)
 {
   int ret = OB_SUCCESS;
   if (NULL != node) {
-    ParseNode *option_node = NULL;
+    ParseNode* option_node = NULL;
     int32_t num = 0;
-    if(T_TABLE_OPTION_LIST != node->type_ || node->num_child_ < 1) {
+    if (T_TABLE_OPTION_LIST != node->type_ || node->num_child_ < 1) {
       ret = OB_ERR_UNEXPECTED;
       SQL_RESV_LOG(WARN, "invalid parse node", K(ret));
     } else if (OB_ISNULL(node->children_) || OB_ISNULL(session_info_)) {
@@ -1635,6 +1640,84 @@ int ObDDLResolver::resolve_table_option(const ParseNode* option_node, const bool
               LOG_WARN("fail to add member to bitset!", K(ret));
             }
           }
+        }
+        break;
+      }
+      case T_EXTERNAL_URL: {
+        ObString my_external_url;
+        if (nullptr == option_node->children_ || 1 != option_node->num_child_) {
+          ret = common::OB_INVALID_ARGUMENT;
+          SQL_RESV_LOG(WARN, "invalid external url arg", K(ret), "num_child", option_node->num_child_);
+        } else if (nullptr == option_node->children_[0]) {
+          ret = OB_ERR_UNEXPECTED;
+          SQL_RESV_LOG(WARN, "option node child is null", K(ret));
+        } else {
+          my_external_url.assign_ptr(const_cast<char*>(option_node->children_[0]->str_value_),
+              static_cast<int32_t>(option_node->children_[0]->str_len_));
+          my_external_url = my_external_url.trim();
+          external_url_ = my_external_url;
+        }
+        break;
+      }
+      case T_FIELD_DELIMITER: {
+        ObString my_field_delimiter;
+        if (nullptr == option_node->children_ || 1 != option_node->num_child_) {
+          ret = common::OB_INVALID_ARGUMENT;
+          SQL_RESV_LOG(WARN, "invalid field delimiters arg", K(ret), "num_child", option_node->num_child_);
+        } else if (nullptr == option_node->children_[0]) {
+          ret = OB_ERR_UNEXPECTED;
+          SQL_RESV_LOG(WARN, "option node child is null", K(ret));
+        } else {
+          my_field_delimiter.assign_ptr(const_cast<char*>(option_node->children_[0]->str_value_),
+              static_cast<int32_t>(option_node->children_[0]->str_len_));
+          field_delimiter_ = my_field_delimiter;
+        }
+        break;
+      }
+      case T_LINE_DELIMITER: {
+        ObString my_line_delimiter;
+        if (nullptr == option_node->children_ || 1 != option_node->num_child_) {
+          ret = common::OB_INVALID_ARGUMENT;
+          SQL_RESV_LOG(WARN, "invalid line delimiters arg", K(ret), "num_child", option_node->num_child_);
+        } else if (nullptr == option_node->children_[0]) {
+          ret = OB_ERR_UNEXPECTED;
+          SQL_RESV_LOG(WARN, "option node child is null", K(ret));
+        } else {
+          my_line_delimiter.assign_ptr(const_cast<char*>(option_node->children_[0]->str_value_),
+              static_cast<int32_t>(option_node->children_[0]->str_len_));
+          line_delimiter_ = my_line_delimiter;
+        }
+        break;
+      }
+      case T_EXTERNAL_PROTOCAL: {
+        ObString my_external_protocal;
+        if (nullptr == option_node->children_ || 1 != option_node->num_child_) {
+          ret = common::OB_INVALID_ARGUMENT;
+          SQL_RESV_LOG(WARN, "invalid external protocal arg", K(ret), "num_child", option_node->num_child_);
+        } else if (nullptr == option_node->children_[0]) {
+          ret = OB_ERR_UNEXPECTED;
+          SQL_RESV_LOG(WARN, "option node child is null", K(ret));
+        } else {
+          my_external_protocal.assign_ptr(const_cast<char*>(option_node->children_[0]->str_value_),
+              static_cast<int32_t>(option_node->children_[0]->str_len_));
+          my_external_protocal = my_external_protocal.trim();
+          external_protocal_ = my_external_protocal;
+        }
+        break;
+      }
+      case T_EXTERNAL_FORMAT: {
+        ObString my_external_format;
+        if (nullptr == option_node->children_ || 1 != option_node->num_child_) {
+          ret = common::OB_INVALID_ARGUMENT;
+          SQL_RESV_LOG(WARN, "invalid external format arg", K(ret), "num_child", option_node->num_child_);
+        } else if (nullptr == option_node->children_[0]) {
+          ret = OB_ERR_UNEXPECTED;
+          SQL_RESV_LOG(WARN, "option node child is null", K(ret));
+        } else {
+          my_external_format.assign_ptr(const_cast<char*>(option_node->children_[0]->str_value_),
+              static_cast<int32_t>(option_node->children_[0]->str_len_));
+          my_external_format = my_external_format.trim();
+          external_format_ = my_external_format;
         }
         break;
       }
@@ -2945,12 +3028,8 @@ int ObDDLResolver::check_urowid_column_length(const share::schema::ObColumnSchem
   return ret;
 }
 
-int ObDDLResolver::check_text_length(ObCharsetType cs_type,
-                                     ObCollationType co_type,
-                                     const char* name,
-                                     ObObjType& type,
-                                     int32_t& length,
-                                     bool need_rewrite_length)
+int ObDDLResolver::check_text_length(ObCharsetType cs_type, ObCollationType co_type, const char* name, ObObjType& type,
+    int32_t& length, bool need_rewrite_length)
 {
   int ret = OB_SUCCESS;
   int64_t mbmaxlen = 0;
@@ -3009,14 +3088,13 @@ int ObDDLResolver::check_text_length(ObCharsetType cs_type,
 // old version ObTinyTextType, ObTextType, ObMediumTextType, ObLongTextType max_length is incorrect
 // correct max_legth is ObTinyTextType:255 etc.
 // so when create new user table, must rewrite max column length
-int ObDDLResolver::rewrite_text_length_mysql(ObObjType &type, int32_t &length)
+int ObDDLResolver::rewrite_text_length_mysql(ObObjType& type, int32_t& length)
 {
   int ret = OB_SUCCESS;
   int32_t max_length = ObAccuracy::MAX_ACCURACY[type].get_length();
   if (length < 0 || length > max_length) {
     ret = OB_ERR_UNEXPECTED;
-    LOG_WARN("length can not be less than 0 or larger than max_length",
-        K(ret), K(type), K(length), K(max_length));
+    LOG_WARN("length can not be less than 0 or larger than max_length", K(ret), K(type), K(length), K(max_length));
   } else if (ob_is_text_tc(type) && max_length == length) {
     length = length - 1;
   }
@@ -3036,11 +3114,11 @@ int ObDDLResolver::check_text_column_length_and_promote(ObColumnSchemaV2& column
     need_check_length = false;
   }
   if (OB_FAIL(check_text_length(column.get_charset_type(),
-                                column.get_collation_type(),
-                                column.get_column_name(),
-                                type,
-                                length,
-                                need_check_length))) {
+          column.get_collation_type(),
+          column.get_column_name(),
+          type,
+          length,
+          need_check_length))) {
     LOG_WARN("failed to check text length", K(ret), K(column));
   } else {
     column.set_data_type(type);
