@@ -976,6 +976,25 @@ int ObSchemaRetrieveUtils::fill_temp_table_schema(const uint64_t tenant_id, T& r
 }
 
 template <typename T>
+int ObSchemaRetrieveUtils::fill_external_table_schema(const uint64_t tenant_id, T& result, ObTableSchema& table_schema)
+{
+  int ret = common::OB_SUCCESS;
+  UNUSED(tenant_id);
+  ObString create_host;
+  ObString default_create_host("");
+  EXTRACT_VARCHAR_FIELD_MYSQL_WITH_DEFAULT_VALUE(
+      result, "create_host", create_host, true, ObSchemaService::g_ignore_column_retrieve_error_, default_create_host);
+  if (0 >= create_host.length()) {
+    ret = OB_ERR_UNEXPECTED;
+    SHARE_SCHEMA_LOG(WARN, "get unexpected create_host. ", K(ret), K(create_host));
+  } else {
+    table_schema.set_create_host(create_host);
+  }
+  SHARE_SCHEMA_LOG(INFO, "Get create_host ", K(create_host), K(table_schema));
+  return ret;
+}
+
+template <typename T>
 int ObSchemaRetrieveUtils::fill_table_schema(
     const uint64_t tenant_id, const bool check_deleted, T& result, ObTableSchema& table_schema, bool& is_deleted)
 {

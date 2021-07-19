@@ -563,6 +563,10 @@ public:
   {
     return TMP_TABLE == table_type_ || TMP_TABLE_ORA_SESS == table_type_ || TMP_TABLE_ORA_TRX == table_type_;
   }
+  inline bool is_external_table() const
+  {
+    return EXTERNAL_TABLE == table_type_;
+  }
   inline bool is_mysql_tmp_table() const
   {
     return TMP_TABLE == table_type_;

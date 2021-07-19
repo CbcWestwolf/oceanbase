@@ -179,6 +179,7 @@ int ObTenantShowTables::inner_get_next_row()
             if (OB_SUCC(ret)) {
               // skip table that is neither normal table, system table nor view table
               if (!table_schema->is_user_table() && !table_schema->is_sys_table() && !table_schema->is_view_table() &&
+                  !table_schema->is_external_table() &&
                   OB_INFORMATION_SCHEMA_ID != extract_pure_id(table_schema->get_database_id()) &&
                   OB_MYSQL_SCHEMA_ID != extract_pure_id(table_schema->get_database_id())) {
                 is_allow = false;

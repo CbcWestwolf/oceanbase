@@ -4142,6 +4142,8 @@ int ObRootService::create_table(const ObCreateTableArg& arg, UInt64& table_id)
       ObSchemaGetterGuard::CheckTableType check_type = ObSchemaGetterGuard::ALL_TYPES;
       if (table_schema.is_mysql_tmp_table()) {
         check_type = ObSchemaGetterGuard::TEMP_TABLE_TYPE;
+      } else if (table_schema.is_external_table()) {
+        check_type = ObSchemaGetterGuard::EXTERNAL_TABLE_TYPE;
       } else if (0 == table_schema.get_session_id()) {
         // if session_id <> 0 during create table, need to exclude the existence of temporary table with the same
         // table_name, if there is, need to throw error.

@@ -177,6 +177,7 @@ static const NonReservedKeyword Mysql_none_reserved_keywords[] = {{"access", ACC
     {"extended_noaddr", EXTENDED_NOADDR},
     {"extent_size", EXTENT_SIZE},
     {"extract", EXTRACT},
+    {"external", EXTERNAL},
     {"failover", FAILOVER},
     {"fast", FAST},
     {"faults", FAULTS},

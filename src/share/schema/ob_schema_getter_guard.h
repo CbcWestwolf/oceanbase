@@ -157,7 +157,8 @@ public:
   enum CheckTableType {
     ALL_TYPES = 0,
     TEMP_TABLE_TYPE = 1,
-    NON_TEMP_TABLE_TYPE = 2,
+    EXTERNAL_TABLE_TYPE = 2,
+    NON_TEMP_TABLE_TYPE = 3,
   };
 
   enum SchemaGuardType {

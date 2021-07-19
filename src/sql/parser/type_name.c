@@ -761,6 +761,7 @@ const char* get_type_name(int type)
 	case T_ALTER_TABLEGROUP : return "T_ALTER_TABLEGROUP";
 	case T_DEFAULT_TABLEGROUP : return "T_DEFAULT_TABLEGROUP";
 	case T_TEMPORARY : return "T_TEMPORARY";
+	case T_EXTERNAL : return "T_EXTERNAL";
 	case T_ALTER_SYSTEM : return "T_ALTER_SYSTEM";
 	case T_CHANGE_OBI : return "T_CHANGE_OBI";
 	case T_FORCE : return "T_FORCE";

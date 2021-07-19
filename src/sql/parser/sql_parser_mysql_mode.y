@@ -214,7 +214,7 @@ END_P SET_VAR DELIMITER
 
         EFFECTIVE ENABLE ENCRYPTION END ENDS ENGINE_ ENGINES ENUM ENTITY ERROR_CODE ERROR_P ERRORS
         ESCAPE EVENT EVENTS EVERY EXCHANGE EXECUTE EXPANSION EXPIRE EXPIRE_INFO EXPORT OUTLINE EXTENDED
-        EXTENDED_NOADDR EXTENT_SIZE EXTRACT EXCEPT EXPIRED
+        EXTENDED_NOADDR EXTENT_SIZE EXTRACT EXCEPT EXPIRED EXTERNAL
 
         FAILOVER FAST FAULTS FIELDS FILEX FINAL_COUNT FIRST FIRST_VALUE FIXED FLUSH FOLLOWER FORMAT
         FOUND FREEZE FREQUENCY FUNCTION FOLLOWING FLASHBACK FULL FROZEN FILE_ID
@@ -326,7 +326,7 @@ END_P SET_VAR DELIMITER
 %type <node> update_asgn_list update_asgn_factor
 %type <node> table_element_list table_element column_definition column_definition_ref column_definition_list column_name_list aux_column_list vertical_column_name
 %type <node> opt_generated_keyname opt_generated_column_attribute_list generated_column_attribute opt_storage_type
-%type <node> data_type temporary_option opt_if_not_exists opt_if_exists opt_charset collation opt_collation cast_data_type
+%type <node> data_type create_table_type_option opt_if_not_exists opt_if_exists opt_charset collation opt_collation cast_data_type
 %type <node> replace_with_opt_hint insert_with_opt_hint column_list opt_on_duplicate_key_clause opt_into  opt_replace opt_materialized opt_materialized_or_temporary
 %type <node> insert_vals_list insert_vals value_or_values
 %type <node> select_with_parens select_no_parens select_clause select_into no_table_select_with_order_and_limit simple_select_with_order_and_limit select_with_parens_with_order_and_limit select_clause_set select_clause_set_left select_clause_set_right  select_clause_set_with_order_and_limit
@@ -3695,10 +3695,14 @@ FORCE
 { $$ = NULL; }
 ;
 
-temporary_option:
+create_table_type_option:
 TEMPORARY
 {
   malloc_terminal_node($$, result->malloc_pool_, T_TEMPORARY); }
+|
+EXTERNAL
+{
+  malloc_terminal_node($$, result->malloc_pool_, T_EXTERNAL); }
 | /* EMPTY */
 { $$ = NULL; }
 ;
@@ -3710,11 +3714,11 @@ TEMPORARY
  *****************************************************************************/
 
 create_table_like_stmt:
-CREATE temporary_option TABLE opt_if_not_exists relation_factor LIKE relation_factor
+CREATE create_table_type_option TABLE opt_if_not_exists relation_factor LIKE relation_factor
 {
   malloc_non_terminal_node($$, result->malloc_pool_, T_CREATE_TABLE_LIKE, 4, $2, $4, $5, $7);
 }
-| CREATE temporary_option TABLE opt_if_not_exists relation_factor '(' LIKE relation_factor ')'
+| CREATE create_table_type_option TABLE opt_if_not_exists relation_factor '(' LIKE relation_factor ')'
 {
   malloc_non_terminal_node($$, result->malloc_pool_, T_CREATE_TABLE_LIKE, 4, $2, $4, $5, $8);
 }
@@ -3727,7 +3731,7 @@ CREATE temporary_option TABLE opt_if_not_exists relation_factor LIKE relation_fa
  *****************************************************************************/
 
 create_table_stmt:
-CREATE temporary_option TABLE opt_if_not_exists relation_factor '(' table_element_list ')'
+CREATE create_table_type_option TABLE opt_if_not_exists relation_factor '(' table_element_list ')'
 opt_table_option_list opt_partition_option
 {
   ParseNode *table_elements = NULL;
@@ -3744,7 +3748,7 @@ opt_table_option_list opt_partition_option
                            NULL);               /* The on commit option for storing temporary tables
                                                    in oracle compatibility mode */
 }
-| CREATE temporary_option TABLE opt_if_not_exists relation_factor '(' table_element_list ')'
+| CREATE create_table_type_option TABLE opt_if_not_exists relation_factor '(' table_element_list ')'
  opt_table_option_list opt_partition_option opt_as select_stmt
 {
   (void)$11;
@@ -3763,7 +3767,7 @@ opt_table_option_list opt_partition_option
                                                     in oracle compatibility mode */
                            $12);                 /* select_stmt */
 }
-| CREATE temporary_option TABLE opt_if_not_exists relation_factor table_option_list opt_partition_option opt_as select_stmt
+| CREATE create_table_type_option TABLE opt_if_not_exists relation_factor table_option_list opt_partition_option opt_as select_stmt
 {
   (void)$8;
   ParseNode *table_options = NULL;
@@ -3779,7 +3783,7 @@ opt_table_option_list opt_partition_option
                                                    in oracle compatibility mode */
                            $9);                  /* select_stmt */
 }
-| CREATE temporary_option TABLE opt_if_not_exists relation_factor partition_option opt_as select_stmt
+| CREATE create_table_type_option TABLE opt_if_not_exists relation_factor partition_option opt_as select_stmt
 {
   (void)$7;
   malloc_non_terminal_node($$, result->malloc_pool_, T_CREATE_TABLE, 8,
@@ -3793,7 +3797,7 @@ opt_table_option_list opt_partition_option
                                                    in oracle compatibility mode */
                            $8);                  /* select_stmt */
 }
-| CREATE temporary_option TABLE opt_if_not_exists relation_factor select_stmt
+| CREATE create_table_type_option TABLE opt_if_not_exists relation_factor select_stmt
 {
   malloc_non_terminal_node($$, result->malloc_pool_, T_CREATE_TABLE, 8,
                            $2,                   /* temporary option */
@@ -3806,7 +3810,7 @@ opt_table_option_list opt_partition_option
                                                    in oracle compatibility mode */
                            $6);                  /* select_stmt */
 }
-| CREATE temporary_option TABLE opt_if_not_exists relation_factor AS select_stmt
+| CREATE create_table_type_option TABLE opt_if_not_exists relation_factor AS select_stmt
 {
   malloc_non_terminal_node($$, result->malloc_pool_, T_CREATE_TABLE, 8,
                            $2,                   /* temporary option */
@@ -6263,6 +6267,9 @@ USING BTREE
 opt_materialized_or_temporary:
 TEMPORARY
 { malloc_terminal_node($$, result->malloc_pool_, T_TEMPORARY); }
+|
+EXTERNAL
+{ malloc_terminal_node($$, result->malloc_pool_, T_EXTERNAL); }
 |
 MATERIALIZED
 { malloc_terminal_node($$, result->malloc_pool_, T_MATERIALIZED); }
@@ -12727,6 +12734,7 @@ ACCOUNT
 |       EXTENT_SIZE
 |       FAILOVER
 |       EXTRACT
+|       EXTERNAL
 |       FAST
 |       FAULTS
 |       FLASHBACK

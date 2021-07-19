@@ -2430,6 +2430,9 @@ int ObSchemaServiceSQLImpl::fetch_all_table_info(const ObRefreshSchemaStatus& sc
   if (OB_SUCC(ret)) {
     if (OB_FAIL(fetch_temp_table_schemas(schema_status, tenant_id, sql_client_retry_weak, table_schema_array))) {
       LOG_WARN("failed to fill temp table schemas", K(ret));
+    } else if (OB_FAIL(
+                   fetch_external_table_schemas(schema_status, tenant_id, sql_client_retry_weak, table_schema_array))) {
+      LOG_WARN("failed to fill external table schemas", K(ret));
     }
   }
   return ret;
@@ -2489,6 +2492,62 @@ int ObSchemaServiceSQLImpl::fetch_temp_table_schema(const ObRefreshSchemaStatus&
   }
   return ret;
 }
+
+int ObSchemaServiceSQLImpl::fetch_external_table_schemas(const ObRefreshSchemaStatus& schema_status,
+    const uint64_t tenant_id, ObISQLClient& sql_client, ObIArray<ObTableSchema*>& table_schema_array)
+{
+  int ret = OB_SUCCESS;
+  FOREACH_CNT_X(table_schema, table_schema_array, OB_SUCC(ret))
+  {
+    if (OB_ISNULL(table_schema)) {
+      ret = OB_ERR_UNEXPECTED;
+      LOG_WARN("NULL ptr", K(table_schema), K(ret));
+    } else if (OB_ISNULL(*table_schema)) {
+      ret = OB_ERR_UNEXPECTED;
+      LOG_WARN("NULL ptr", K(*table_schema), K(ret));
+    } else if (OB_FAIL(fetch_external_table_schema(schema_status, tenant_id, sql_client, **table_schema))) {
+      LOG_WARN("fill external table failed", K(ret));
+    }
+  }
+  return ret;
+}
+
+int ObSchemaServiceSQLImpl::fetch_external_table_schema(const ObRefreshSchemaStatus& schema_status,
+    const uint64_t tenant_id, ObISQLClient& sql_client, ObTableSchema& table_schema)
+{
+  int ret = OB_SUCCESS;
+  ObSqlString sql;
+  ObString create_host;
+  SMART_VAR(ObMySQLProxy::MySQLResult, res)
+  {
+    common::sqlclient::ObMySQLResult* result = NULL;
+    const int64_t snapshot_timestamp = schema_status.snapshot_timestamp_;
+    DEFINE_SQL_CLIENT_RETRY_WEAK_WITH_SNAPSHOT(sql_client, snapshot_timestamp);
+    const uint64_t exec_tenant_id = fill_exec_tenant_id(schema_status);
+    if (false == table_schema.is_external_table()) {
+      // do nothing...
+    } else if (OB_FAIL(sql.assign_fmt("SELECT create_host FROM %s where tenant_id = %lu and table_id = %lu",
+                   OB_ALL_EXTERNAL_TABLE_TNAME,
+                   fill_extract_tenant_id(schema_status, tenant_id),
+                   fill_extract_schema_id(schema_status, table_schema.get_table_id())))) {
+      LOG_WARN("append sql failed", K(table_schema), K(ret));
+    } else if (OB_FAIL(sql_client_retry_weak.read(res, exec_tenant_id, sql.ptr()))) {
+      LOG_WARN("execute sql failed", K(sql), K(ret));
+    } else if (OB_UNLIKELY(NULL == (result = res.get_result()))) {
+      ret = OB_ERR_UNEXPECTED;
+      LOG_WARN("failed to get result.", K(table_schema), K(ret));
+    } else if (OB_FAIL(result->next())) {
+      LOG_WARN("failed to get external table info", K(table_schema), K(ret));
+      if (OB_ITER_END == ret) {
+        ret = OB_SUCCESS;
+      }
+    } else if (OB_FAIL(ObSchemaRetrieveUtils::fill_external_table_schema(tenant_id, *result, table_schema))) {
+      LOG_WARN("fail to fill external table schema", K(ret), K(tenant_id));
+    }
+  }
+  return ret;
+}
+
 int ObSchemaServiceSQLImpl::fetch_new_tenant_id(uint64_t& new_tenant_id)
 {
   int ret = OB_SUCCESS;
@@ -4202,6 +4261,8 @@ int ObSchemaServiceSQLImpl::fetch_table_info(const ObRefreshSchemaStatus& schema
   if (OB_SUCC(ret)) {
     if (OB_FAIL(fetch_temp_table_schema(schema_status, tenant_id, sql_client, *table_schema))) {
       LOG_WARN("failed to fill temp table schema:", K(ret));
+    } else if (OB_FAIL(fetch_external_table_schema(schema_status, tenant_id, sql_client, *table_schema))) {
+      LOG_WARN("failed to fill external table schema:", K(ret));
     }
   }
   return ret;

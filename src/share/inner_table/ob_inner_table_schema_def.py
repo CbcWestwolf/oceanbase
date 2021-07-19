@@ -4462,6 +4462,28 @@ def_table_schema(
 )
 
 def_table_schema(
+  table_name     = '__all_external_table',
+  table_id       = '308',
+  table_type = 'SYSTEM_TABLE',
+  gm_columns = [],
+  rowkey_columns = [
+      ('tenant_id', 'int', 'false'),
+      ('table_id', 'int', 'false'),
+  ],
+  partition_expr = ['key_v2', 'tenant_id', 16 ],
+  partition_columns = ['tenant_id'],
+  rs_restart_related = True,
+  in_tenant_space = True,
+
+  normal_columns = [
+    ('create_host', 'varchar:OB_MAX_HOST_NAME_LENGTH', 'false', ''),
+  ],
+
+  migrate_data_before_2200 = True,
+  columns_with_tenant_id = ['table_id'],
+)
+
+def_table_schema(
   table_name    = '__all_res_mgr_consumer_group',
   table_id      = '316',
   table_type = 'SYSTEM_TABLE',
@@ -9772,6 +9794,11 @@ def_table_schema(**gen_iterate_virtual_table_def(
   table_name = '__all_virtual_global_transaction',
   keywords = all_def_keywords['__all_tenant_global_transaction']))
 
+def_table_schema(**gen_iterate_virtual_table_def(
+  table_id = '12207',
+  real_tenant_id=False,
+  table_name = '__all_virtual_external_table',
+  keywords = all_def_keywords['__all_external_table']))
 
 ################################################################################
 # Oracle Virtual Table(15000,20000]

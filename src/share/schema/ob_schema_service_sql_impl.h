@@ -562,6 +562,12 @@ private:
   int fetch_temp_table_schema(const ObRefreshSchemaStatus& schema_status, const uint64_t tenant_id,
       common::ObISQLClient& sql_client, ObTableSchema& table_schema);
 
+  int fetch_external_table_schemas(const ObRefreshSchemaStatus& schema_status, const uint64_t tenant_id,
+      common::ObISQLClient& sql_client, common::ObIArray<ObTableSchema*>& table_schema_array);
+
+  int fetch_external_table_schema(const ObRefreshSchemaStatus& schema_status, const uint64_t tenant_id,
+      common::ObISQLClient& sql_client, ObTableSchema& table_schema);
+
   int fetch_sys_variable(common::ObISQLClient& client, const ObRefreshSchemaStatus& schema_status,
       const uint64_t tenant_id, const int64_t schema_version, ObSimpleSysVariableSchema& sys_variable);
 

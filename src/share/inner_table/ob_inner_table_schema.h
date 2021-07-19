@@ -448,6 +448,7 @@ public:
   static int all_res_mgr_plan_schema(share::schema::ObTableSchema& table_schema);
   static int all_res_mgr_directive_schema(share::schema::ObTableSchema& table_schema);
   static int all_res_mgr_mapping_rule_schema(share::schema::ObTableSchema& table_schema);
+  static int all_external_table_schema(share::schema::ObTableSchema& table_schema);
   static int all_res_mgr_consumer_group_schema(share::schema::ObTableSchema& table_schema);
   static int tenant_virtual_all_table_schema(share::schema::ObTableSchema& table_schema);
   static int tenant_virtual_table_column_schema(share::schema::ObTableSchema& table_schema);
@@ -727,6 +728,7 @@ public:
   static int all_virtual_pg_backup_backupset_task_schema(share::schema::ObTableSchema& table_schema);
   static int all_virtual_backup_backup_log_archive_status_schema(share::schema::ObTableSchema& table_schema);
   static int all_virtual_global_transaction_schema(share::schema::ObTableSchema& table_schema);
+  static int all_virtual_external_table_schema(share::schema::ObTableSchema& table_schema);
   static int all_virtual_table_agent_schema(share::schema::ObTableSchema& table_schema);
   static int all_virtual_column_agent_schema(share::schema::ObTableSchema& table_schema);
   static int all_virtual_database_agent_schema(share::schema::ObTableSchema& table_schema);
@@ -1468,6 +1470,7 @@ const schema_create_func sys_table_schema_creators[] = {
     ObInnerTableSchema::all_res_mgr_plan_schema,
     ObInnerTableSchema::all_res_mgr_directive_schema,
     ObInnerTableSchema::all_res_mgr_mapping_rule_schema,
+    ObInnerTableSchema::all_external_table_schema,
     ObInnerTableSchema::all_res_mgr_consumer_group_schema,
     NULL,
 };
@@ -1751,6 +1754,7 @@ const schema_create_func virtual_table_schema_creators[] = {
     ObInnerTableSchema::all_virtual_pg_backup_backupset_task_schema,
     ObInnerTableSchema::all_virtual_backup_backup_log_archive_status_schema,
     ObInnerTableSchema::all_virtual_global_transaction_schema,
+    ObInnerTableSchema::all_virtual_external_table_schema,
     ObInnerTableSchema::all_virtual_table_agent_schema,
     ObInnerTableSchema::all_virtual_column_agent_schema,
     ObInnerTableSchema::all_virtual_database_agent_schema,
@@ -2361,6 +2365,7 @@ const uint64_t tenant_space_tables[] = {
     OB_ALL_FUNC_TID,
     OB_ALL_FUNC_HISTORY_TID,
     OB_ALL_TEMP_TABLE_TID,
+    OB_ALL_EXTERNAL_TABLE_TID,
     OB_ALL_SEQUENCE_OBJECT_TID,
     OB_ALL_SEQUENCE_OBJECT_HISTORY_TID,
     OB_ALL_SEQUENCE_VALUE_TID,
@@ -2421,6 +2426,7 @@ const uint64_t tenant_space_tables[] = {
     OB_ALL_RES_MGR_PLAN_TID,
     OB_ALL_RES_MGR_DIRECTIVE_TID,
     OB_ALL_RES_MGR_MAPPING_RULE_TID,
+    OB_ALL_EXTERNAL_TABLE_TID,
     OB_ALL_RES_MGR_CONSUMER_GROUP_TID,
     OB_ALL_TABLE_V2_HISTORY_IDX_DATA_TABLE_ID_TID,
     OB_ALL_TABLE_HISTORY_IDX_DATA_TABLE_ID_TID,
@@ -3289,6 +3295,7 @@ const char* const tenant_space_table_names[] = {
     OB_ALL_RES_MGR_PLAN_TNAME,
     OB_ALL_RES_MGR_DIRECTIVE_TNAME,
     OB_ALL_RES_MGR_MAPPING_RULE_TNAME,
+    OB_ALL_EXTERNAL_TABLE_TNAME,
     OB_ALL_RES_MGR_CONSUMER_GROUP_TNAME,
     OB_ALL_TABLE_V2_HISTORY_IDX_DATA_TABLE_ID_TNAME,
     OB_ALL_TABLE_HISTORY_IDX_DATA_TABLE_ID_TNAME,
@@ -4018,12 +4025,12 @@ static inline bool is_only_rs_virtual_table(const uint64_t tid)
 }
 
 const int64_t OB_CORE_TABLE_COUNT = 5;
-const int64_t OB_SYS_TABLE_COUNT = 178;
-const int64_t OB_VIRTUAL_TABLE_COUNT = 463;
+const int64_t OB_SYS_TABLE_COUNT = 179;
+const int64_t OB_VIRTUAL_TABLE_COUNT = 464;
 const int64_t OB_SYS_VIEW_COUNT = 350;
-const int64_t OB_SYS_TENANT_TABLE_COUNT = 997;
+const int64_t OB_SYS_TENANT_TABLE_COUNT = 999;
 const int64_t OB_CORE_SCHEMA_VERSION = 1;
-const int64_t OB_BOOTSTRAP_SCHEMA_VERSION = 1000;
+const int64_t OB_BOOTSTRAP_SCHEMA_VERSION = 1002;
 
 }  // end namespace share
 }  // end namespace oceanbase

@@ -67,6 +67,7 @@ private:
   int set_nullable_for_cta_column(
       ObSelectStmt* select_stmt, share::schema::ObColumnSchemaV2& column, const ObRawExpr* expr);
   int set_temp_table_info(share::schema::ObTableSchema& table_schema, ParseNode* commit_option_node);
+  int set_external_table_info(share::schema::ObTableSchema& table_schema);
 
   int set_table_option_to_schema(share::schema::ObTableSchema& table_schema);
   int resolve_table_charset_info(const ParseNode* node);
