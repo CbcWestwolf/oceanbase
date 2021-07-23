@@ -92,7 +92,8 @@ const int64_t ObSql::SQL_MEM_SIZE_LIMIT = 1024 * 1024 * 64;
 
 int ObSql::init(common::ObStatManager* stat_mgr, common::ObOptStatManager* opt_stat_mgr, ObReqTransport* transport,
     storage::ObPartitionService* partition_service, common::ObIDataAccessService* vt_partition_service,
-    share::ObIPartitionLocationCache* partition_location_cache, common::ObAddr& addr, share::ObRsMgr& rs_mgr)
+    common::ObIDataAccessService* et_partition_service, share::ObIPartitionLocationCache* partition_location_cache,
+    common::ObAddr& addr, share::ObRsMgr& rs_mgr)
 {
   int ret = OB_SUCCESS;
   if (OB_ISNULL(stat_mgr) || OB_ISNULL(transport) || OB_ISNULL(partition_service) || OB_ISNULL(vt_partition_service) ||
@@ -114,6 +115,7 @@ int ObSql::init(common::ObStatManager* stat_mgr, common::ObOptStatManager* opt_s
       transport_ = transport;
       partition_service_ = partition_service;
       vt_partition_service_ = vt_partition_service;
+      et_partition_service_ = et_partition_service;
       self_addr_ = addr;
       rs_mgr_ = &rs_mgr;
       inited_ = true;
@@ -1154,19 +1156,17 @@ inline int ObSql::handle_text_query(const ObString& stmt, ObSqlCtx& context, ObR
   } else {
     context.cur_sql_ = trimed_stmt;
     pc_ctx = new (pc_ctx) ObPlanCacheCtx(trimed_stmt,
-                                         false, /*is_ps_mode*/
-                                         allocator,
-                                         context,
-                                         ectx,
-                                         tenant_id);
+        false, /*is_ps_mode*/
+        allocator,
+        context,
+        ectx,
+        tenant_id);
     uint64_t database_id = OB_INVALID_ID;
 
     if (OB_FAIL(session.get_database_id(database_id))) {
       LOG_WARN("Failed to get database id", K(ret));
     } else if (FALSE_IT(pc_ctx->bl_key_.db_id_ =
-                                  (database_id == OB_INVALID_ID) ?
-                                      OB_OUTLINE_DEFAULT_DATABASE_ID:
-                                      database_id)) {
+                            (database_id == OB_INVALID_ID) ? OB_OUTLINE_DEFAULT_DATABASE_ID : database_id)) {
       // do nothing
     } else if (!use_plan_cache) {
       if (context.multi_stmt_item_.is_batched_multi_stmt()) {
@@ -2161,6 +2161,7 @@ inline int ObSql::init_exec_context(const ObSqlCtx& context, ObExecutorRpcImpl& 
     task_exec_ctx->set_srv_rpc(srv_proxy);
     task_exec_ctx->set_partition_service(partition_service_);
     task_exec_ctx->set_vt_partition_service(vt_partition_service_);
+    task_exec_ctx->set_et_partition_service(et_partition_service_);
     task_exec_ctx->set_self_addr(self_addr_);
     static_cast<ObSqlPartitionLocationCache*>(context.partition_location_cache_)->set_task_exec_ctx(task_exec_ctx);
     if (OB_FAIL(exec_ctx.create_physical_plan_ctx())) {
@@ -3000,12 +3001,11 @@ int ObSql::after_get_plan(ObPlanCacheCtx& pc_ctx, ObSQLSessionInfo& session, ObP
   bool enable_send_plan_event = EVENT_CALL(EventTable::EN_DISABLE_REMOTE_EXEC_WITH_PLAN) == 0;
   bool enable_send_plan = session.get_is_in_retry() && enable_send_plan_event;
   int last_query_retry_err = session.get_retry_info().get_last_query_retry_err();
-  if (OB_TRANSACTION_SET_VIOLATION == last_query_retry_err
-      || OB_TRY_LOCK_ROW_CONFLICT == last_query_retry_err) {
+  if (OB_TRANSACTION_SET_VIOLATION == last_query_retry_err || OB_TRY_LOCK_ROW_CONFLICT == last_query_retry_err) {
     enable_send_plan = false;
   }
-  LOG_DEBUG("before after_get_plan", K(enable_send_plan), K(enable_send_plan_event),
-            "is_retry",session.get_is_in_retry());
+  LOG_DEBUG(
+      "before after_get_plan", K(enable_send_plan), K(enable_send_plan_event), "is_retry", session.get_is_in_retry());
   //  LOG_INFO("after get paln", K(pctx), K(phy_plan));
   if (NULL != pctx) {
     if (NULL != phy_plan) {
@@ -3029,8 +3029,7 @@ int ObSql::after_get_plan(ObPlanCacheCtx& pc_ctx, ObSQLSessionInfo& session, ObP
         }  // end for
       }
       if (OB_SUCC(ret) && phy_plan->is_remote_plan() && !phy_plan->contains_temp_table() &&
-          GET_MIN_CLUSTER_VERSION() >= CLUSTER_VERSION_2250 &&
-          !enable_send_plan) {
+          GET_MIN_CLUSTER_VERSION() >= CLUSTER_VERSION_2250 && !enable_send_plan) {
         ParamStore& param_store = pctx->get_param_store_for_update();
         if (OB_NOT_NULL(ps_params)) {
           int64_t initial_param_count = ps_params->count();

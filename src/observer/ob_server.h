@@ -22,6 +22,7 @@
 #include "sql/ob_sql.h"
 #include "sql/engine/cmd/ob_load_data_rpc.h"
 #include "sql/ob_query_exec_ctx_mgr.h"
+#include "sql/engine/table/ob_external_data_access_service.h"
 
 #include "storage/transaction/ob_weak_read_service.h"  // ObWeakReadService
 #include "storage/ob_long_ops_monitor.h"
@@ -362,6 +363,9 @@ private:
 
   // virtual table related
   ObVirtualDataAccessService vt_data_service_;
+
+  // external table related
+  ObExternalDataAccessService et_data_service_;
 
   // calculate suitable cache size
   ObCacheSizeCalculator cache_size_calculator_;

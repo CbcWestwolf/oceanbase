@@ -110,6 +110,7 @@ ob_set_subtarget(ob_share common
   ob_gts_table_operator.cpp
   ob_upgrade_utils.cpp
   ob_virtual_table_iterator.cpp
+  ob_external_table_iterator.cpp
   ob_virtual_table_projector.cpp
   ob_virtual_table_scanner_iterator.cpp
   ob_web_service_root_addr.cpp

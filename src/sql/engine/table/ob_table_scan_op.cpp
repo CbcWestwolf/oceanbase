@@ -414,7 +414,9 @@ ObTableScanOp::ObTableScanOp(ObExecContext& exec_ctx, const ObOpSpec& spec, ObOp
           exec_ctx.get_my_session()->get_effective_tenant_id()),
       filter_executor_(nullptr),
       index_back_filter_executor_(nullptr),
-      cur_trace_id_(nullptr)
+      cur_trace_id_(nullptr),
+      table_access_type_(ObTableAccessType::NOT_SPECIFIC),
+      table_schema_(nullptr)
 {
   scan_param_.partition_guard_ = &partition_guard_;
 }
@@ -428,7 +430,7 @@ ObTableScanOp::~ObTableScanOp()
 int ObTableScanOp::get_partition_service(ObTaskExecutorCtx& executor_ctx, ObIDataAccessService*& das) const
 {
   int ret = OB_SUCCESS;
-  if (OB_FAIL(ObSQLUtils::get_partition_service(executor_ctx, MY_SPEC.ref_table_id_, das))) {
+  if (OB_FAIL(ObSQLUtils::get_partition_service(executor_ctx, MY_SPEC.ref_table_id_, das, table_access_type_))) {
     LOG_WARN("fail to get partition service", K(ret));
   }
   return ret;
@@ -768,13 +770,12 @@ int ObTableScanOp::init_converter()
         vt_result_converter_->~ObVirtualTableResultConverter();
         vt_result_converter_ = nullptr;
       }
-      const ObTableSchema* org_table_schema = NULL;
       void* buf = ctx_.get_allocator().alloc(sizeof(ObVirtualTableResultConverter));
       if (OB_ISNULL(buf)) {
         ret = OB_ERR_UNEXPECTED;
         LOG_WARN("allocator", K(ret));
       } else if (FALSE_IT(vt_result_converter_ = new (buf) ObVirtualTableResultConverter)) {
-      } else if (OB_FAIL(sql_ctx->schema_guard_->get_table_schema(MY_SPEC.vt_table_id_, org_table_schema))) {
+      } else if (OB_FAIL(sql_ctx->schema_guard_->get_table_schema(MY_SPEC.vt_table_id_, table_schema_))) {
         LOG_WARN("get table schema failed", K(MY_SPEC.vt_table_id_), K(ret));
       } else if (OB_FAIL(vt_result_converter_->reset_and_init(table_allocator_,
                      GET_MY_SESSION(ctx_),
@@ -783,7 +784,7 @@ int ObTableScanOp::init_converter()
                      &MY_SPEC.key_with_tenant_ids_,
                      &MY_SPEC.has_extra_tenant_ids_,
                      &ctx_.get_allocator(),
-                     org_table_schema,
+                     table_schema_,
                      &MY_SPEC.org_output_column_ids_,
                      MY_SPEC.use_real_tenant_id_,
                      MY_SPEC.has_tenant_id_col_))) {
@@ -792,6 +793,35 @@ int ObTableScanOp::init_converter()
     }
     LOG_TRACE("debug init converter", K(ret), K(MY_SPEC.ref_table_id_));
   }
+  return ret;
+}
+
+int ObTableScanOp::init_table_access_type()
+{
+  int ret = OB_SUCCESS;
+
+  if (OB_ISNULL(table_schema_)) {
+    ObSqlCtx* sql_ctx = NULL;
+    if (OB_ISNULL(sql_ctx = ctx_.get_sql_ctx()) || OB_ISNULL(sql_ctx->schema_guard_)) {
+      ret = OB_ERR_UNEXPECTED;
+      LOG_WARN("unexpected status: sql ctx or schema guard is null", K(ret));
+    } else if (OB_FAIL(sql_ctx->schema_guard_->get_table_schema(MY_SPEC.ref_table_id_, table_schema_))) {
+      ret = OB_ERR_UNEXPECTED;
+      LOG_WARN("get table schema failed", K(MY_SPEC.ref_table_id_), K(ret));
+    }
+  }
+
+  if (OB_ISNULL(table_schema_)) {
+    ret = OB_ERR_UNEXPECTED;
+    LOG_WARN("table_schema_ is null", K(ret));
+  } else if (table_schema_->is_external_table()) {
+    table_access_type_ = ObTableAccessType::EXTERNAL_TABLE;
+  } else if (MY_SPEC.is_vt_mapping_) {
+    table_access_type_ = ObTableAccessType::VIRTUAL_TABLE;
+  } else {
+    table_access_type_ = ObTableAccessType::STORAGE_TABLE;
+  }
+
   return ret;
 }
 
@@ -820,6 +850,8 @@ int ObTableScanOp::inner_open()
     if (OB_FAIL(get_gi_task_and_restart())) {
       LOG_WARN("fail to get gi task and scan", K(ret));
     }
+  } else if (OB_FAIL(init_table_access_type())) {
+    LOG_WARN("failed to init table access type", K(ret));
   } else if (OB_FAIL(do_table_scan(false))) {
     if (OB_TRY_LOCK_ROW_CONFLICT != ret) {
       LOG_WARN("fail to do table scan", K(ret));
@@ -1287,7 +1319,9 @@ int ObTableScanOp::group_rescan()
 int ObTableScanOp::get_next_row_with_mode()
 {
   int ret = OB_SUCCESS;
-  if (MY_SPEC.is_vt_mapping_) {
+  if (table_access_type_ == ObTableAccessType::EXTERNAL_TABLE) {
+    ret = result_->get_next_row();
+  } else if (MY_SPEC.is_vt_mapping_) {
     // switch to mysql mode
     CompatModeGuard g(ObWorker::CompatMode::MYSQL);
     ret = result_->get_next_row();

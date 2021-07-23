@@ -59,8 +59,8 @@ public:
   /// init SQL module
   int init(common::ObStatManager* stat_mgr, common::ObOptStatManager* opt_stat_mgr,
       rpc::frame::ObReqTransport* transport, storage::ObPartitionService* partition_service,
-      common::ObIDataAccessService* vt_partition_service, share::ObIPartitionLocationCache* partition_loc_cache,
-      common::ObAddr& addr, share::ObRsMgr& rs_mgr);
+      common::ObIDataAccessService* vt_partition_service, common::ObIDataAccessService* et_partition_service,
+      share::ObIPartitionLocationCache* partition_loc_cache, common::ObAddr& addr, share::ObRsMgr& rs_mgr);
   void destroy();
 
 public:
@@ -315,6 +315,7 @@ private:
   rpc::frame::ObReqTransport* transport_;
   storage::ObPartitionService* partition_service_;
   common::ObIDataAccessService* vt_partition_service_;
+  common::ObIDataAccessService* et_partition_service_;
   // END Global singleton dependent interface
 
   ObPlanCacheManager plan_cache_manager_;

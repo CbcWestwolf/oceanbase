@@ -327,6 +327,13 @@ enum DistinctType { T_DISTINCT_NONE = 0, T_HASH_DISTINCT = 1, T_MERGE_DISTINCT =
 
 enum class ObPDMLOption { NOT_SPECIFIED = -1, ENABLE, DISABLE, MAX_VALUE };
 
+enum class ObTableAccessType {
+  NOT_SPECIFIC,
+  STORAGE_TABLE,
+  VIRTUAL_TABLE,
+  EXTERNAL_TABLE,
+};
+
 enum OrderingFlag {
   NOT_MATCH = 0,
   JOIN_MATCH = 1,

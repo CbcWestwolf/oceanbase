@@ -576,6 +576,7 @@ ob_set_subtarget(ob_sql engine
   engine/table/ob_block_sample_scan.cpp
   engine/table/ob_block_sample_scan_op.cpp
   engine/table/ob_domain_index.cpp
+  engine/table/ob_external_data_access_service.cpp
   engine/table/ob_link_scan.cpp
   engine/table/ob_lookup_task_builder.cpp
   engine/table/ob_multi_part_table_scan.cpp
