@@ -830,7 +830,9 @@ int ObTableScanOp::inner_open()
   int ret = OB_SUCCESS;
   ObTaskExecutorCtx& task_exec_ctx = ctx_.get_task_exec_ctx();
   MY_INPUT.set_location_idx(0);
-  if (OB_FAIL(init_old_expr_ctx())) {
+  if (OB_FAIL(init_table_access_type())) {
+    LOG_WARN("failed to init table access type", K(ret));
+  } else if (OB_FAIL(init_old_expr_ctx())) {
     LOG_WARN("init old expr ctx failed", K(ret));
   } else if (OB_FAIL(init_table_allocator())) {
     LOG_WARN("init table allocator failed", K(ret));
@@ -850,8 +852,6 @@ int ObTableScanOp::inner_open()
     if (OB_FAIL(get_gi_task_and_restart())) {
       LOG_WARN("fail to get gi task and scan", K(ret));
     }
-  } else if (OB_FAIL(init_table_access_type())) {
-    LOG_WARN("failed to init table access type", K(ret));
   } else if (OB_FAIL(do_table_scan(false))) {
     if (OB_TRY_LOCK_ROW_CONFLICT != ret) {
       LOG_WARN("fail to do table scan", K(ret));

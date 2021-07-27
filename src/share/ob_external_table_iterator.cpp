@@ -99,7 +99,8 @@ int ObExternalTableIterator::inner_get_next_row(ObNewRow*& row)
       ret = tokens.push_back(ObString(token));
       token = strtok(NULL, delimiter_);
     }
-    if (OB_FAIL(ret) || tokens.count() < scan_cols_schema_.count()) {
+    if (OB_FAIL(ret) || tokens.count() < scan_cols_schema_.count() ||
+        tokens.count() != table_schema_->get_column_count() - (table_schema_->is_no_pk_table() ? 1 : 0)) {
       ret = OB_ERR_UNEXPECTED;
       LOG_WARN("columns number not macth", K(tokens.count()), K(scan_cols_schema_.count()));
     }
