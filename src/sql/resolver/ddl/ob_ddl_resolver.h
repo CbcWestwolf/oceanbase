@@ -142,14 +142,10 @@ public:
   static const int64_t DEFAULT_TABLE_DOP = 1;
   explicit ObDDLResolver(ObResolverParams& params);
   virtual ~ObDDLResolver();
-  static int check_text_length(ObCharsetType cs_type,
-                               ObCollationType co_type,
-                               const char* name,
-                               ObObjType& type,
-                               int32_t& length,
-                               bool need_rewrite_length);
+  static int check_text_length(ObCharsetType cs_type, ObCollationType co_type, const char* name, ObObjType& type,
+      int32_t& length, bool need_rewrite_length);
 
-  static int rewrite_text_length_mysql(ObObjType &type, int32_t &length);
+  static int rewrite_text_length_mysql(ObObjType& type, int32_t& length);
   static int check_uniq_allow(
       share::schema::ObTableSchema& table_schema, obrpc::ObCreateIndexArg& index_arg, bool& allow);
   static int get_primary_key_default_value(common::ObObjType type, common::ObObj& default_value);
@@ -256,7 +252,7 @@ protected:
   int set_table_name(const common::ObString& table_name);
   int set_database_name(const common::ObString& database_name);
   int set_encryption_name(const common::ObString& encryption);
-  int resolve_table_id_pre(ParseNode *node);
+  int resolve_table_id_pre(ParseNode* node);
   int resolve_table_options(ParseNode* node, bool is_index_option);
   int resolve_table_option(const ParseNode* node, const bool is_index_option);
   int resolve_column_definition_ref(
@@ -511,6 +507,8 @@ protected:
   share::schema::ObTableMode table_mode_;
   int64_t table_dop_;  // default value is 1
   int64_t hash_subpart_num_;
+  ObString external_url_;
+  ObString external_delimiters_;
 
 private:
   template <typename STMT>

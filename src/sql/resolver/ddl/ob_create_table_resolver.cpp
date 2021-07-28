@@ -309,8 +309,15 @@ int ObCreateTableResolver::set_temp_table_info(ObTableSchema& table_schema, Pars
 int ObCreateTableResolver::set_external_table_info(ObTableSchema& table_schema)
 {
   int ret = OB_SUCCESS;
+  if (OB_ISNULL(external_delimiters_) || external_delimiters_.empty()) {
+    external_delimiters_ = ",";
+  }
   if (OB_FAIL(set_table_name(table_name_))) {
     LOG_WARN("failed to set table name", K(ret), K(table_name_));
+  } else if (external_url_.empty() || OB_FAIL(table_schema.set_external_url(external_url_))) {
+    LOG_WARN("failed to set external url", K(ret), K(external_url_));
+  } else if (external_delimiters_.empty() || OB_FAIL(table_schema.set_external_delimiters(external_delimiters_))) {
+    LOG_WARN("failed to set external delimiters", K(ret), K(external_delimiters_));
   } else {
     table_schema.set_table_type(EXTERNAL_TABLE);
     LOG_DEBUG("resolve create external table", K(table_schema));

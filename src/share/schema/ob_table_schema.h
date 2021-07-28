@@ -719,6 +719,22 @@ public:
   {
     master_key_id_ = id;
   }
+  inline const common::ObString& get_external_url() const
+  {
+    return external_url_;
+  }
+  inline int set_external_url(const common::ObString& external_url)
+  {
+    return deep_copy_str(external_url, external_url_);
+  }
+  inline const common::ObString& get_external_delimiters() const
+  {
+    return external_delimiters_;
+  }
+  inline int set_external_delimiters(const common::ObString& external_delimiters)
+  {
+    return deep_copy_str(external_delimiters, external_delimiters_);
+  }
   inline int set_encrypt_key(const common::ObString& key)
   {
     return deep_copy_str(key, encrypt_key_);
@@ -795,6 +811,8 @@ protected:
   common::ObSEArray<ObZoneScore, common::OB_MAX_MEMBER_NUMBER, common::ObNullAllocator> primary_zone_array_;
   common::ObString encrypt_key_;
   uint64_t master_key_id_;
+  common::ObString external_url_;
+  common::ObString external_delimiters_;
 
   // dblink.
   // No serialization required

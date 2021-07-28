@@ -2794,6 +2794,44 @@ int ObInnerTableSchema::all_external_table_schema(ObTableSchema &table_schema)
       create_host_default,
       create_host_default); //default_value
   }
+
+  if (OB_SUCC(ret)) {
+    ObObj external_url_default;
+    external_url_default.set_varchar(ObString::make_string(""));
+    ADD_COLUMN_SCHEMA_T("external_url", //column_name
+      ++column_id, //column_id
+      0, //rowkey_id
+      0, //index_id
+      0, //part_key_pos
+      ObVarcharType, //column_type
+      CS_TYPE_INVALID, //column_collation_type
+      OB_MAX_HOST_NAME_LENGTH, //column_length
+      -1, //column_precision
+      -1, //column_scale
+      false, //is_nullable
+      false, //is_autoincrement
+      external_url_default,
+      external_url_default); //default_value
+  }
+
+  if (OB_SUCC(ret)) {
+    ObObj external_delimiters_default;
+    external_delimiters_default.set_varchar(ObString::make_string(""));
+    ADD_COLUMN_SCHEMA_T("external_delimiters", //column_name
+      ++column_id, //column_id
+      0, //rowkey_id
+      0, //index_id
+      0, //part_key_pos
+      ObVarcharType, //column_type
+      CS_TYPE_INVALID, //column_collation_type
+      OB_MAX_HOST_NAME_LENGTH, //column_length
+      -1, //column_precision
+      -1, //column_scale
+      false, //is_nullable
+      false, //is_autoincrement
+      external_delimiters_default,
+      external_delimiters_default); //default_value
+  }
   if (OB_SUCC(ret)) {
     table_schema.get_part_option().set_part_func_type(PARTITION_FUNC_TYPE_KEY);
     if (OB_FAIL(table_schema.get_part_option().set_part_expr("key_v2 (tenant_id)"))) {

@@ -2518,6 +2518,8 @@ int ObSchemaServiceSQLImpl::fetch_external_table_schema(const ObRefreshSchemaSta
   int ret = OB_SUCCESS;
   ObSqlString sql;
   ObString create_host;
+  ObString external_url;
+  ObString external_delimiters;
   SMART_VAR(ObMySQLProxy::MySQLResult, res)
   {
     common::sqlclient::ObMySQLResult* result = NULL;
@@ -2526,7 +2528,8 @@ int ObSchemaServiceSQLImpl::fetch_external_table_schema(const ObRefreshSchemaSta
     const uint64_t exec_tenant_id = fill_exec_tenant_id(schema_status);
     if (false == table_schema.is_external_table()) {
       // do nothing...
-    } else if (OB_FAIL(sql.assign_fmt("SELECT create_host FROM %s where tenant_id = %lu and table_id = %lu",
+    } else if (OB_FAIL(sql.assign_fmt("SELECT create_host, external_url, external_delimiters FROM %s where tenant_id = "
+                                      "%lu and table_id = %lu",
                    OB_ALL_EXTERNAL_TABLE_TNAME,
                    fill_extract_tenant_id(schema_status, tenant_id),
                    fill_extract_schema_id(schema_status, table_schema.get_table_id())))) {

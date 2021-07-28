@@ -2934,6 +2934,8 @@ int ObTableSqlService::delete_from_all_external_table(
     } else if (!is_single_row(affected_rows)) {
       ret = OB_ERR_UNEXPECTED;
       LOG_WARN("unexpected error", K(affected_rows), K(ret));
+    } else {
+      LOG_DEBUG("Success to delete from __all_external_table", K(affected_rows), K(ret));
     }
   }
   return ret;
@@ -4381,12 +4383,17 @@ int ObTableSqlService::insert_external_table_info(ObISQLClient& sql_client, cons
   if (false == table_schema.is_external_table()) {
     // do nothing...
   } else if (OB_SUCCESS != (ret = insert_sql_string.append_fmt(
-                                "INSERT INTO %s (TENANT_ID, TABLE_ID, CREATE_HOST) values(%lu, %lu, \"%.*s\")",
+                                "INSERT INTO %s (TENANT_ID, TABLE_ID, CREATE_HOST, "
+                                "EXTERNAL_URL, EXTERNAL_DELIMITERS) values(%lu, %lu, \"%.*s\", \"%.*s\", \"%.*s\" )",
                                 OB_ALL_EXTERNAL_TABLE_TNAME,
                                 ObSchemaUtils::get_extract_tenant_id(exec_tenant_id, tenant_id),
                                 ObSchemaUtils::get_extract_schema_id(exec_tenant_id, table_id),
                                 table_schema.get_create_host_str().length(),
-                                table_schema.get_create_host_str().ptr()))) {
+                                table_schema.get_create_host_str().ptr(),
+                                table_schema.get_external_url().length(),
+                                table_schema.get_external_url().ptr(),
+                                table_schema.get_external_delimiters().length(),
+                                table_schema.get_external_delimiters().ptr()))) {
     LOG_WARN("sql string append format string failed, ", K(ret));
   } else if (OB_FAIL(sql_client.write(exec_tenant_id, insert_sql_string.ptr(), affected_rows))) {
     LOG_WARN("execute sql failed,  ", "sql", insert_sql_string.ptr(), K(ret));
@@ -4394,6 +4401,7 @@ int ObTableSqlService::insert_external_table_info(ObISQLClient& sql_client, cons
     ret = OB_ERR_UNEXPECTED;
     LOG_WARN("affected_rows expect to 1, ", K(affected_rows), K(ret));
   }
+  LOG_DEBUG("ObTableSqlService::insert_external_table_info", K(insert_sql_string));
   return ret;
 }
 

@@ -29,8 +29,6 @@ int ObExternalDataAccessService::table_scan(ObVTableScanParam& params, ObNewRowI
   void* buf = NULL;
   ObExternalTableIterator* iter = NULL;
   ObIAllocator& allocator = *params.scan_allocator_;
-  const char* path = "/home/chenbochuan.cbc/external_data.dat";
-  const char* delimiter = ",";
 
   LOG_DEBUG("enter ObExternalDataAccessService::table_scan ", K(params));
 
@@ -52,10 +50,10 @@ int ObExternalDataAccessService::table_scan(ObVTableScanParam& params, ObNewRowI
     LOG_WARN("fail to set table schema", K(table_schema));
     allocator.free(iter);
   } else {
-    iter->set_delimiter(delimiter);
+    iter->set_delimiter(table_schema->get_external_delimiters().ptr());
     iter->set_schema_guard(&schema_guard);
-    if (OB_FAIL(iter->open_file(path))) {
-      LOG_WARN("fail to open file", K(path));
+    if (OB_FAIL(iter->open_file(table_schema->get_external_url().ptr()))) {
+      LOG_WARN("fail to open file", K(table_schema->get_external_url()));
       allocator.free(iter);
     } else {
       result = static_cast<ObNewRowIterator*>(iter);

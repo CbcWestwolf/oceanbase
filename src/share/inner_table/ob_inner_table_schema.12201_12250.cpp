@@ -2388,6 +2388,44 @@ int ObInnerTableSchema::all_virtual_external_table_schema(ObTableSchema &table_s
       create_host_default,
       create_host_default); //default_value
   }
+
+  if (OB_SUCC(ret)) {
+    ObObj external_url_default;
+    external_url_default.set_varchar(ObString::make_string(""));
+    ADD_COLUMN_SCHEMA_T("external_url", //column_name
+      ++column_id, //column_id
+      0, //rowkey_id
+      0, //index_id
+      0, //part_key_pos
+      ObVarcharType, //column_type
+      CS_TYPE_INVALID, //column_collation_type
+      OB_MAX_HOST_NAME_LENGTH, //column_length
+      -1, //column_precision
+      -1, //column_scale
+      false, //is_nullable
+      false, //is_autoincrement
+      external_url_default,
+      external_url_default); //default_value
+  }
+
+  if (OB_SUCC(ret)) {
+    ObObj external_delimiters_default;
+    external_delimiters_default.set_varchar(ObString::make_string(""));
+    ADD_COLUMN_SCHEMA_T("external_delimiters", //column_name
+      ++column_id, //column_id
+      0, //rowkey_id
+      0, //index_id
+      0, //part_key_pos
+      ObVarcharType, //column_type
+      CS_TYPE_INVALID, //column_collation_type
+      OB_MAX_HOST_NAME_LENGTH, //column_length
+      -1, //column_precision
+      -1, //column_scale
+      false, //is_nullable
+      false, //is_autoincrement
+      external_delimiters_default,
+      external_delimiters_default); //default_value
+  }
   table_schema.set_index_using_type(USING_BTREE);
   table_schema.set_row_store_type(FLAT_ROW_STORE);
   table_schema.set_store_format(OB_STORE_FORMAT_COMPACT_MYSQL);
