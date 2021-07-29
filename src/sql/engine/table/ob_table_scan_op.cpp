@@ -415,7 +415,7 @@ ObTableScanOp::ObTableScanOp(ObExecContext& exec_ctx, const ObOpSpec& spec, ObOp
       filter_executor_(nullptr),
       index_back_filter_executor_(nullptr),
       cur_trace_id_(nullptr),
-      table_access_type_(ObTableAccessType::NOT_SPECIFIC),
+      use_external_(false),
       table_schema_(nullptr)
 {
   scan_param_.partition_guard_ = &partition_guard_;
@@ -430,7 +430,7 @@ ObTableScanOp::~ObTableScanOp()
 int ObTableScanOp::get_partition_service(ObTaskExecutorCtx& executor_ctx, ObIDataAccessService*& das) const
 {
   int ret = OB_SUCCESS;
-  if (OB_FAIL(ObSQLUtils::get_partition_service(executor_ctx, MY_SPEC.ref_table_id_, das, table_access_type_))) {
+  if (OB_FAIL(ObSQLUtils::get_partition_service(executor_ctx, MY_SPEC.ref_table_id_, das, use_external_))) {
     LOG_WARN("fail to get partition service", K(ret));
   }
   return ret;
@@ -815,11 +815,7 @@ int ObTableScanOp::init_table_access_type()
     ret = OB_ERR_UNEXPECTED;
     LOG_WARN("table_schema_ is null", K(ret));
   } else if (table_schema_->is_external_table()) {
-    table_access_type_ = ObTableAccessType::EXTERNAL_TABLE;
-  } else if (MY_SPEC.is_vt_mapping_) {
-    table_access_type_ = ObTableAccessType::VIRTUAL_TABLE;
-  } else {
-    table_access_type_ = ObTableAccessType::STORAGE_TABLE;
+    use_external_ = true;
   }
 
   return ret;
@@ -1319,7 +1315,7 @@ int ObTableScanOp::group_rescan()
 int ObTableScanOp::get_next_row_with_mode()
 {
   int ret = OB_SUCCESS;
-  if (table_access_type_ == ObTableAccessType::EXTERNAL_TABLE) {
+  if (use_external_) {
     ret = result_->get_next_row();
   } else if (MY_SPEC.is_vt_mapping_) {
     // switch to mysql mode

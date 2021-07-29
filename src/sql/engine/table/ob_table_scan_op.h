@@ -353,7 +353,7 @@ protected:
   ObPushdownFilterExecutor* filter_executor_;
   ObPushdownFilterExecutor* index_back_filter_executor_;
   const uint64_t* cur_trace_id_;
-  ObTableAccessType table_access_type_;
+  bool use_external_;
   const share::schema::ObTableSchema* table_schema_;
 };
 

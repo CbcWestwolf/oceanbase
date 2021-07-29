@@ -2126,18 +2126,18 @@ int ObSQLUtils::get_partition_service(ObTaskExecutorCtx& executor_ctx, int64_t t
   return ret;
 }
 
-int ObSQLUtils::get_partition_service(ObTaskExecutorCtx& executor_ctx, int64_t table_id, ObIDataAccessService*& das,
-    const ObTableAccessType table_access_type)
+int ObSQLUtils::get_partition_service(
+    ObTaskExecutorCtx& executor_ctx, int64_t table_id, ObIDataAccessService*& das, bool use_external)
 {
   UNUSED(table_id);
   int ret = OB_SUCCESS;
-  if (table_access_type == ObTableAccessType::VIRTUAL_TABLE) {
-    das = executor_ctx.get_vt_partition_service();
-  } else if (table_access_type == ObTableAccessType::STORAGE_TABLE) {
-    das = static_cast<ObIDataAccessService*>(executor_ctx.get_partition_service());
-  } else {
+  if (use_external) {
     LOG_DEBUG("get external data access service");
     das = executor_ctx.get_et_partition_service();
+  } else if (is_virtual_table(table_id)) {
+    das = executor_ctx.get_vt_partition_service();
+  } else {
+    das = static_cast<ObIDataAccessService*>(executor_ctx.get_partition_service());
   }
   if (OB_ISNULL(das)) {
     ret = OB_ERR_UNEXPECTED;
