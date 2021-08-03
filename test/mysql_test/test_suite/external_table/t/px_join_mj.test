@@ -1,0 +1,5 @@
+--source mysql_test/test_suite/external_table/include/load_px_data.inc
+
+explain select * from ext_stu, ext_score where ext_stu.sid = ext_score.sid order by ext_score.score;
+--sorted_result
+select * from ext_stu, ext_score where ext_stu.sid = ext_score.sid order by ext_score.score;

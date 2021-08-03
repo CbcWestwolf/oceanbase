@@ -1,0 +1,31 @@
+set ob_query_timeout=1000000000;
+--disable_warnings
+drop database if exists et_test;
+--enable_warnings
+create database et_test;
+use et_test;
+
+# # 关闭 recyclebin
+set recyclebin = 0;
+
+create external table ext_t1 (
+  c1 number, 
+  c2 number, 
+  c3 char(20), 
+  c4 varchar(20)
+) external_url = '/home/chenbochuan.cbc/data/static_engine/t1.dat';
+
+# base table
+select * from ext_t1;
+select * from ext_t1 order by c1 desc, c2 desc;
+select * from ext_t1 where c1 + c2 < 10;
+select * from ext_t1 limit 2;
+select * from ext_t1 where c1 = 5;
+select * from ext_t1 where c1 = 5 or c1 = 7;
+select * from ext_t1 where (c1 = 2 and c2 = 4) or (c1 = 7 and c2 = 5) or (c1 = 8 and c2 = 7);
+
+# index back
+select * from ext_t1 where c2  = 2 and c1 + c2 < 10 and c4 > c3;
+
+#index only
+select c1, c2 from ext_t1 where c2 > 4;

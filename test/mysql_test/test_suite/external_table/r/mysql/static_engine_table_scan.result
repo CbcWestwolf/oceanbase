@@ -1,0 +1,62 @@
+set ob_query_timeout=1000000000;
+drop database if exists et_test;
+create database et_test;
+use et_test;
+set recyclebin = 0;
+create external table ext_t1 (
+c1 number, 
+c2 number, 
+c3 char(20), 
+c4 varchar(20)
+) external_url = '/home/chenbochuan.cbc/data/static_engine/t1.dat';
+select * from ext_t1;
+c1	c2	c3	c4
+1	2	'a'	'b'
+3	4	'c'	'd'
+5	1	'xx'	'yy'
+5	2	'xx'	'yy'
+7	5	'xx1'	'yy2'
+7	6	'xx1'	'yy2'
+8	7	'xx1'	'yy2'
+select * from ext_t1 order by c1 desc, c2 desc;
+c1	c2	c3	c4
+8	7	'xx1'	'yy2'
+7	6	'xx1'	'yy2'
+7	5	'xx1'	'yy2'
+5	2	'xx'	'yy'
+5	1	'xx'	'yy'
+3	4	'c'	'd'
+1	2	'a'	'b'
+select * from ext_t1 where c1 + c2 < 10;
+c1	c2	c3	c4
+1	2	'a'	'b'
+3	4	'c'	'd'
+5	1	'xx'	'yy'
+5	2	'xx'	'yy'
+select * from ext_t1 limit 2;
+c1	c2	c3	c4
+1	2	'a'	'b'
+3	4	'c'	'd'
+select * from ext_t1 where c1 = 5;
+c1	c2	c3	c4
+5	1	'xx'	'yy'
+5	2	'xx'	'yy'
+select * from ext_t1 where c1 = 5 or c1 = 7;
+c1	c2	c3	c4
+5	1	'xx'	'yy'
+5	2	'xx'	'yy'
+7	5	'xx1'	'yy2'
+7	6	'xx1'	'yy2'
+select * from ext_t1 where (c1 = 2 and c2 = 4) or (c1 = 7 and c2 = 5) or (c1 = 8 and c2 = 7);
+c1	c2	c3	c4
+7	5	'xx1'	'yy2'
+8	7	'xx1'	'yy2'
+select * from ext_t1 where c2  = 2 and c1 + c2 < 10 and c4 > c3;
+c1	c2	c3	c4
+1	2	'a'	'b'
+5	2	'xx'	'yy'
+select c1, c2 from ext_t1 where c2 > 4;
+c1	c2
+7	5
+7	6
+8	7

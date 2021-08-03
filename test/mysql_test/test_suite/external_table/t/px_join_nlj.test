@@ -1,0 +1,11 @@
+--source mysql_test/test_suite/external_table/include/load_px_data.inc
+
+# bc2host
+explain select * from ext_stu, ext_score where ext_stu.sid = ext_score.sid and ext_stu.sid < 12;
+--sorted_result
+select * from ext_stu, ext_score where ext_stu.sid = ext_score.sid and ext_stu.sid < 12;
+
+# subject 上指定一个选择率，走 NLJ
+explain select * from ext_score, ext_teacher where ext_teacher.subject = ext_score.subject and ext_teacher.tid = 1;
+--sorted_result
+select * from ext_score, ext_teacher where ext_teacher.subject = ext_score.subject and ext_teacher.tid = 1;

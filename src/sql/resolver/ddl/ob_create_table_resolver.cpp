@@ -651,6 +651,11 @@ int ObCreateTableResolver::resolve(const ParseNode& parse_tree)
           }
         }
 
+        if (OB_SUCC(ret) && is_external_table && 0 < get_primary_key_size()) {
+          ret = OB_ERR_PARSER_SYNTAX;
+          SQL_RESV_LOG(WARN, "external table should not specify primary key", K(ret));
+        }
+
         if (OB_SUCC(ret) && 0 == get_primary_key_size() && TPKM_NEW_NO_PK != table_mode_.pk_mode_) {  // old no-pk table
           // old no-pk table, need add hidden primary key before add partition key
           if (OB_FAIL(add_hidden_primary_key())) {

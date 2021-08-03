@@ -207,22 +207,43 @@ int ObExternalTableIterator::get_next_row()
   if (OB_ISNULL(scan_param_) || OB_ISNULL(scan_param_->output_exprs_) || OB_ISNULL(scan_param_->op_)) {
     ret = OB_INVALID_ARGUMENT;
     LOG_WARN("invalid argument", K(ret));
-  } else if (OB_FAIL(get_next_row(row))) {
-    if (OB_ITER_END != ret) {
-      LOG_WARN("get next row failed", K(ret));
-    }
-  } else if (OB_ISNULL(row)) {
-    LOG_WARN("NULL row returned", K(ret));
-  } else if (scan_param_->output_exprs_->count() != row->count_) {
-    ret = OB_ERR_UNEXPECTED;
-    LOG_WARN(
-        "row count less than output exprs", K(ret), K(*row), "output_exprs_cnt", scan_param_->output_exprs_->count());
-  } else {
-    for (int64_t i = 0; OB_SUCC(ret) && i < scan_param_->output_exprs_->count(); i++) {
-      ObExpr* expr = scan_param_->output_exprs_->at(i);
-      ObDatum& datum = expr->locate_datum_for_write(scan_param_->op_->get_eval_ctx());
-      if (OB_FAIL(datum.from_obj(row->cells_[i], expr->obj_datum_map_))) {
-        LOG_WARN("convert ObObj to ObDatum failed", K(ret));
+  }
+
+  while (OB_SUCC(ret)) {
+    if (OB_FAIL(get_next_row(row))) {
+      if (OB_ITER_END != ret) {
+        LOG_WARN("get next row failed", K(ret));
+      }
+    } else if (OB_ISNULL(row)) {
+      LOG_WARN("NULL row returned", K(ret));
+    } else if (scan_param_->output_exprs_->count() != row->count_) {
+      ret = OB_ERR_UNEXPECTED;
+      LOG_WARN(
+          "row count less than output exprs", K(ret), K(*row), "output_exprs_cnt", scan_param_->output_exprs_->count());
+    } else {
+      bool filtered = false;
+      for (int64_t i = 0; OB_SUCC(ret) && i < scan_param_->output_exprs_->count(); i++) {
+        ObExpr* expr = scan_param_->output_exprs_->at(i);
+        ObDatum& datum = expr->locate_datum_for_write(scan_param_->op_->get_eval_ctx());
+        if (OB_FAIL(datum.from_obj(row->cells_[i], expr->obj_datum_map_))) {
+          LOG_WARN("convert ObObj to ObDatum failed", K(ret));
+        }
+      }
+      if (OB_NOT_NULL(scan_param_->op_filters_) && !scan_param_->op_filters_->empty()) {
+        LOG_DEBUG("filters count", K(scan_param_->op_filters_->count()));
+        for (int64_t i = 0; OB_SUCC(ret) && i < scan_param_->op_filters_->count(); i++) {
+          if (OB_FAIL(scan_param_->op_->filter_row_outside(false, *(scan_param_->op_filters_), filtered))) {
+            LOG_WARN("filter row failed", K(ret));
+          } else {
+            if (filtered) {
+              break;
+            }
+          }
+        }
+      }
+      if (!filtered) {
+
+        break;
       }
     }
   }
