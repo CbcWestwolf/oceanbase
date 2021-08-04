@@ -507,8 +507,10 @@ protected:
   share::schema::ObTableMode table_mode_;
   int64_t table_dop_;  // default value is 1
   int64_t hash_subpart_num_;
-  ObString external_url_;
-  ObString external_delimiters_;
+  common::ObString external_url_;
+  common::ObString external_delimiters_;
+  common::ObString external_protocal_;
+  common::ObString external_format_;
 
 private:
   template <typename STMT>

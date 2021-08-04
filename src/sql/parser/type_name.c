@@ -764,6 +764,8 @@ const char* get_type_name(int type)
 	case T_EXTERNAL : return "T_EXTERNAL";
 	case T_EXTERNAL_URL : return "T_EXTERNAL_URL";
 	case T_EXTERNAL_DELIMITERS : return "T_EXTERNAL_DELIMITERS";
+	case T_EXTERNAL_PROTOCAL : return "T_EXTERNAL_PROTOCAL";
+	case T_EXTERNAL_FORMAT : return "T_EXTERNAL_FORMAT";
 	case T_ALTER_SYSTEM : return "T_ALTER_SYSTEM";
 	case T_CHANGE_OBI : return "T_CHANGE_OBI";
 	case T_FORCE : return "T_FORCE";

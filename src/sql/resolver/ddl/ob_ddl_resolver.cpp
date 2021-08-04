@@ -91,7 +91,9 @@ ObDDLResolver::ObDDLResolver(ObResolverParams& params)
       table_dop_(DEFAULT_TABLE_DOP),
       hash_subpart_num_(-1),
       external_url_(),
-      external_delimiters_()
+      external_delimiters_(),
+      external_protocal_(),
+      external_format_()
 {
   table_mode_.reset();
 }
@@ -1668,6 +1670,38 @@ int ObDDLResolver::resolve_table_option(const ParseNode* option_node, const bool
           my_external_del.assign_ptr(const_cast<char*>(option_node->children_[0]->str_value_),
               static_cast<int32_t>(option_node->children_[0]->str_len_));
           external_delimiters_ = my_external_del;
+        }
+        break;
+      }
+      case T_EXTERNAL_PROTOCAL: {
+        ObString my_external_protocal;
+        if (nullptr == option_node->children_ || 1 != option_node->num_child_) {
+          ret = common::OB_INVALID_ARGUMENT;
+          SQL_RESV_LOG(WARN, "invalid external protocal arg", K(ret), "num_child", option_node->num_child_);
+        } else if (nullptr == option_node->children_[0]) {
+          ret = OB_ERR_UNEXPECTED;
+          SQL_RESV_LOG(WARN, "option node child is null", K(ret));
+        } else {
+          my_external_protocal.assign_ptr(const_cast<char*>(option_node->children_[0]->str_value_),
+              static_cast<int32_t>(option_node->children_[0]->str_len_));
+          my_external_protocal = my_external_protocal.trim();
+          external_protocal_ = my_external_protocal;
+        }
+        break;
+      }
+      case T_EXTERNAL_FORMAT: {
+        ObString my_external_format;
+        if (nullptr == option_node->children_ || 1 != option_node->num_child_) {
+          ret = common::OB_INVALID_ARGUMENT;
+          SQL_RESV_LOG(WARN, "invalid external format arg", K(ret), "num_child", option_node->num_child_);
+        } else if (nullptr == option_node->children_[0]) {
+          ret = OB_ERR_UNEXPECTED;
+          SQL_RESV_LOG(WARN, "option node child is null", K(ret));
+        } else {
+          my_external_format.assign_ptr(const_cast<char*>(option_node->children_[0]->str_value_),
+              static_cast<int32_t>(option_node->children_[0]->str_len_));
+          my_external_format = my_external_format.trim();
+          external_format_ = my_external_format;
         }
         break;
       }

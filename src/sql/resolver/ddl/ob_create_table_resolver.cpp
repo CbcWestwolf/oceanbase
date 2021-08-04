@@ -312,12 +312,22 @@ int ObCreateTableResolver::set_external_table_info(ObTableSchema& table_schema)
   if (OB_ISNULL(external_delimiters_) || external_delimiters_.empty()) {
     external_delimiters_ = ",";
   }
+  if (OB_ISNULL(external_protocal_) || external_protocal_.empty()) {
+    external_protocal_ = "file";
+  }
+  if (OB_ISNULL(external_format_) || external_format_.empty()) {
+    external_format_ = "csv";
+  }
   if (OB_FAIL(set_table_name(table_name_))) {
     LOG_WARN("failed to set table name", K(ret), K(table_name_));
   } else if (external_url_.empty() || OB_FAIL(table_schema.set_external_url(external_url_))) {
     LOG_WARN("failed to set external url", K(ret), K(external_url_));
   } else if (external_delimiters_.empty() || OB_FAIL(table_schema.set_external_delimiters(external_delimiters_))) {
     LOG_WARN("failed to set external delimiters", K(ret), K(external_delimiters_));
+  } else if (external_protocal_.empty() || OB_FAIL(table_schema.set_external_protocal(external_protocal_))) {
+    LOG_WARN("failed to set external protocal", K(ret), K(external_protocal_));
+  } else if (external_format_.empty() || OB_FAIL(table_schema.set_external_format(external_format_))) {
+    LOG_WARN("failed to set external format", K(ret), K(external_format_));
   } else {
     table_schema.set_table_type(EXTERNAL_TABLE);
     LOG_DEBUG("resolve create external table", K(table_schema));

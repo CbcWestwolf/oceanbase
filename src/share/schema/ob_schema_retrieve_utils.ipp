@@ -983,17 +983,15 @@ int ObSchemaRetrieveUtils::fill_external_table_schema(const uint64_t tenant_id, 
   ObString create_host;
   ObString external_url;
   ObString external_delimiters;
+  ObString external_protocal;
+  ObString external_format;
   ObString default_create_host("");
-  ObString default_external_delimiters(",");
   EXTRACT_VARCHAR_FIELD_MYSQL_WITH_DEFAULT_VALUE(
       result, "create_host", create_host, true, ObSchemaService::g_ignore_column_retrieve_error_, default_create_host);
   EXTRACT_VARCHAR_FIELD_MYSQL(result, "external_url", external_url);
-  EXTRACT_VARCHAR_FIELD_MYSQL_WITH_DEFAULT_VALUE(result,
-      "external_delimiters",
-      external_delimiters,
-      true,
-      ObSchemaService::g_ignore_column_retrieve_error_,
-      default_external_delimiters);
+  EXTRACT_VARCHAR_FIELD_MYSQL(result, "external_delimiters", external_delimiters);
+  EXTRACT_VARCHAR_FIELD_MYSQL(result, "external_protocal", external_protocal);
+  EXTRACT_VARCHAR_FIELD_MYSQL(result, "external_format", external_format);
   if (0 >= create_host.length()) {
     ret = OB_ERR_UNEXPECTED;
     SHARE_SCHEMA_LOG(WARN, "get unexpected create_host. ", K(ret), K(create_host));
@@ -1003,10 +1001,18 @@ int ObSchemaRetrieveUtils::fill_external_table_schema(const uint64_t tenant_id, 
   } else if (0 >= external_delimiters.length()) {
     ret = OB_ERR_UNEXPECTED;
     SHARE_SCHEMA_LOG(WARN, "get unexpected external_delimiters. ", K(ret), K(external_delimiters));
+  } else if (0 >= external_protocal.length()) {
+    ret = OB_ERR_UNEXPECTED;
+    SHARE_SCHEMA_LOG(WARN, "get unexpected external_protocal. ", K(ret), K(external_protocal));
+  } else if (0 >= external_format.length()) {
+    ret = OB_ERR_UNEXPECTED;
+    SHARE_SCHEMA_LOG(WARN, "get unexpected external_format. ", K(ret), K(external_format));
   } else {
     table_schema.set_create_host(create_host);
     table_schema.set_external_url(external_url);
     table_schema.set_external_delimiters(external_delimiters);
+    table_schema.set_external_protocal(external_protocal);
+    table_schema.set_external_format(external_format);
   }
   SHARE_SCHEMA_LOG(INFO, "Get create_host ", K(create_host), K(table_schema));
   return ret;

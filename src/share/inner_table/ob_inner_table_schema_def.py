@@ -4479,6 +4479,8 @@ def_table_schema(
     ('create_host', 'varchar:OB_MAX_HOST_NAME_LENGTH', 'false', ''),
     ('external_url', 'varchar:OB_MAX_HOST_NAME_LENGTH', 'false', ''),
     ('external_delimiters', 'varchar:OB_MAX_HOST_NAME_LENGTH', 'false', ''),
+    ('external_protocal', 'varchar:OB_MAX_HOST_NAME_LENGTH', 'false', ''),
+    ('external_format', 'varchar:OB_MAX_HOST_NAME_LENGTH', 'false', ''),
   ],
 
   migrate_data_before_2200 = True,

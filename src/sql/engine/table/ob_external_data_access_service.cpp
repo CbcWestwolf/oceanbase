@@ -50,6 +50,7 @@ int ObExternalDataAccessService::table_scan(ObVTableScanParam& params, ObNewRowI
     LOG_WARN("fail to set table schema", K(table_schema));
     allocator.free(iter);
   } else {
+    LOG_DEBUG("external table", K(table_schema->get_external_protocal()), K(table_schema->get_external_format()));
     iter->set_delimiter(table_schema->get_external_delimiters().ptr());
     iter->set_schema_guard(&schema_guard);
     if (OB_FAIL(iter->open_file(table_schema->get_external_url().ptr()))) {

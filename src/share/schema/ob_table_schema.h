@@ -735,6 +735,22 @@ public:
   {
     return deep_copy_str(external_delimiters, external_delimiters_);
   }
+  inline const common::ObString& get_external_protocal() const
+  {
+    return external_protocal_;
+  }
+  inline int set_external_protocal(const common::ObString& external_protocal)
+  {
+    return deep_copy_str(external_protocal, external_protocal_);
+  }
+  inline const common::ObString& get_external_format() const
+  {
+    return external_format_;
+  }
+  inline int set_external_format(const common::ObString& external_format)
+  {
+    return deep_copy_str(external_format, external_format_);
+  }
   inline int set_encrypt_key(const common::ObString& key)
   {
     return deep_copy_str(key, encrypt_key_);
@@ -813,6 +829,8 @@ protected:
   uint64_t master_key_id_;
   common::ObString external_url_;
   common::ObString external_delimiters_;
+  common::ObString external_protocal_;
+  common::ObString external_format_;
 
   // dblink.
   // No serialization required
