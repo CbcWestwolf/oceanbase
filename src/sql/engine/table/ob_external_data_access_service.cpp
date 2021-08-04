@@ -12,13 +12,18 @@
 
 #include "ob_external_data_access_service.h"
 #include "share/schema/ob_schema_getter_guard.h"
+#include "share/external_table/ob_external_table_iterator.h"
+#include "rootserver/ob_root_service.h"
 
 #define USING_LOG_PREFIX SQL
 
 using namespace oceanbase::common;
 using namespace oceanbase::sql;
-using namespace share::schema;
+using namespace oceanbase::share::schema;
+using namespace oceanbase::share;
 using oceanbase::common::ObNewRowIterator;
+using rootserver::ObRootService;
+
 namespace oceanbase {
 namespace sql {
 int ObExternalDataAccessService::table_scan(ObVTableScanParam& params, ObNewRowIterator*& result)
@@ -53,7 +58,7 @@ int ObExternalDataAccessService::table_scan(ObVTableScanParam& params, ObNewRowI
     LOG_DEBUG("external table", K(table_schema->get_external_protocal()), K(table_schema->get_external_format()));
     iter->set_delimiter(table_schema->get_external_delimiters().ptr());
     iter->set_schema_guard(&schema_guard);
-    if (OB_FAIL(iter->open_file(table_schema->get_external_url().ptr()))) {
+    if (OB_FAIL(iter->open(table_schema->get_external_url().ptr()))) {
       LOG_WARN("fail to open file", K(table_schema->get_external_url()));
       allocator.free(iter);
     } else {

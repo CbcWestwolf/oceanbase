@@ -13,9 +13,13 @@
 #define USING_LOG_PREFIX SHARE
 
 #include "ob_external_table_iterator.h"
+#include "sql/session/ob_sql_session_info.h"
+#include "sql/engine/ob_operator.h"
+
+using oceanbase::sql::ObOperator;
 
 namespace oceanbase {
-namespace sql {
+namespace share {
 void ObExternalTableIterator::reset()
 {
   fp_ = NULL;
@@ -79,6 +83,9 @@ int ObExternalTableIterator::inner_get_next_row(ObNewRow*& row)
   if (OB_ISNULL(fp_)) {
     ret = OB_FILE_NOT_OPENED;
     LOG_WARN("file not open", K(ret), K(fp_));
+  } else if (OB_FAIL(skip_offset())) {
+    ret = OB_ERR_UNEXPECTED;
+    LOG_WARN("fail to skip offset", K(ret));
   } else if (limit_param_.limit_ != -1 && (limit_param_.limit_-- == 0)) {
     ret = OB_ITER_END;
   } else if (feof(fp_)) {
@@ -106,7 +113,7 @@ int ObExternalTableIterator::inner_get_next_row(ObNewRow*& row)
     }
 
     if (OB_SUCC(ret)) {
-      const ObDataTypeCastParams dtc_params = ObBasicSessionInfo::create_dtc_params(session_);
+      const ObDataTypeCastParams dtc_params = sql::ObSQLSessionInfo::create_dtc_params(session_);
       ObCastCtx cast_ctx(allocator_, &dtc_params, CM_NONE, ObCharset::get_system_collation());
       ObObj* cells = NULL;
 
@@ -119,7 +126,7 @@ int ObExternalTableIterator::inner_get_next_row(ObNewRow*& row)
       }
 
       for (int64_t i = 0; OB_SUCC(ret) && i < scan_cols_schema_.count(); ++i) {
-        const ObColumnSchemaV2* col_schema = scan_cols_schema_.at(i);
+        const share::schema::ObColumnSchemaV2* col_schema = scan_cols_schema_.at(i);
         int index = table_schema_->get_column_idx(col_schema->get_column_id(), true);
         if (index >= table_schema_->get_column_count()) {
           ret = OB_ERR_UNEXPECTED;
@@ -171,7 +178,7 @@ int ObExternalTableIterator::get_next_row(ObNewRow*& row)
     LOG_ERROR("table schema is NULL", K(ret));
   } else {
     for (int64_t i = 0; OB_SUCC(ret) && i < scan_cols_schema_.count(); ++i) {
-      const ObColumnSchemaV2* col_schema = scan_cols_schema_.at(i);
+      const share::schema::ObColumnSchemaV2* col_schema = scan_cols_schema_.at(i);
       if (OB_ISNULL(col_schema)) {
         ret = OB_ERR_UNEXPECTED;
         LOG_ERROR("col_schema is NULL", K(ret), K(i));
@@ -223,8 +230,8 @@ int ObExternalTableIterator::get_next_row()
     } else {
       bool filtered = false;
       for (int64_t i = 0; OB_SUCC(ret) && i < scan_param_->output_exprs_->count(); i++) {
-        ObExpr* expr = scan_param_->output_exprs_->at(i);
-        ObDatum& datum = expr->locate_datum_for_write(scan_param_->op_->get_eval_ctx());
+        sql::ObExpr* expr = scan_param_->output_exprs_->at(i);
+        sql::ObDatum& datum = expr->locate_datum_for_write(scan_param_->op_->get_eval_ctx());
         if (OB_FAIL(datum.from_obj(row->cells_[i], expr->obj_datum_map_))) {
           LOG_WARN("convert ObObj to ObDatum failed", K(ret));
         }
@@ -251,14 +258,23 @@ int ObExternalTableIterator::get_next_row()
   return ret;
 }
 
-int ObExternalTableIterator::open_file(const char* path)
+int ObExternalTableIterator::open(const char* path)
 {
   int ret = OB_SUCCESS;
 
   if (OB_ISNULL(fp_ = fopen(path, "r"))) {
     ret = OB_FILE_NOT_EXIST;
     LOG_WARN("external path not exist", K(path), K(ret));
-  } else if (limit_param_.offset_ > 0) {
+  }
+
+  return ret;
+}
+
+int ObExternalTableIterator::skip_offset()
+{
+  int ret = OB_SUCCESS;
+
+  if (limit_param_.offset_ > 0) {
     char buf[BUF_SIZE];
     while (OB_NOT_NULL(fgets(buf, BUF_SIZE, fp_)) && (--limit_param_.offset_ > 0)) {
       ;
@@ -294,7 +310,7 @@ int ObExternalTableIterator::set_table_schema(const share::schema::ObTableSchema
   } else {
     for (int64_t i = 0; OB_SUCC(ret) && i < scan_param_->column_ids_.count(); ++i) {
       const uint64_t column_id = scan_param_->column_ids_.at(i);
-      const ObColumnSchemaV2* col_schema = table_schema_->get_column_schema(column_id);
+      const schema::ObColumnSchemaV2* col_schema = table_schema_->get_column_schema(column_id);
       if (OB_ISNULL(col_schema)) {
         ret = OB_ERR_UNEXPECTED;
         LOG_ERROR("col_schema is NULL", K(ret), K(column_id));
@@ -306,5 +322,5 @@ int ObExternalTableIterator::set_table_schema(const share::schema::ObTableSchema
   return ret;
 }
 
-}  // namespace sql
+}  // namespace share
 }  // namespace oceanbase

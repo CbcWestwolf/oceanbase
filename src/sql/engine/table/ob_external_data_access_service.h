@@ -13,23 +13,17 @@
 #ifndef OCEANBASE_OB_EXTERNAL_DATA_ACCESS_SERVICE_H
 #define OCEANBASE_OB_EXTERNAL_DATA_ACCESS_SERVICE_H
 
-#include "share/ob_external_table_iterator.h"
 #include "share/ob_i_data_access_service.h"
-#include "rootserver/ob_root_service.h"
 
 namespace oceanbase {
 namespace common {
+class ObAddr;
+class ObServerConfig;
 class ObVTableScanParam;
 class ObIDataAccessService;
 class ObNewRowIterator;
-class ObExternalTableIterator;
 }  // namespace common
-namespace share {
-namespace schema {
-class ObSchemaGetterGuard;
-class ObTableSchema;
-}  // namespace schema
-}  // namespace share
+
 namespace storage {
 class ObTableScanParam;
 }

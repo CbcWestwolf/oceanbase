@@ -16,19 +16,34 @@
 #include <stdio.h>
 #include <string.h>
 #include "common/row/ob_row_iterator.h"
+#include "share/ob_i_data_access_service.h"
+// #include "share/schema/ob_column_schema.h"
+// #include "share/schema/ob_table_schema.h"
 
 namespace oceanbase {
+namespace common {
+class ObNewRow;
+class ObVTableScanParam;
+}  // namespace common
 namespace share {
 namespace schema {
 class ObTableSchema;
 class ObSchemaGetterGuard;
+class ObColumnSchemaV2;
 }  // namespace schema
 }  // namespace share
 
 namespace sql {
+class ObBasicSessionInfo;
+}
+
+namespace share {
+class ObDatum;
+class ObSQLSessionInfo;
+class ObLimitParam;
+
 class ObExternalTableIterator : public ObNewRowIterator {
 public:
-  virtual int inner_get_next_row(ObNewRow*& row);
   virtual int get_next_row(ObNewRow*& row) override;
   virtual int get_next_row() override;
   virtual void reset() override;
@@ -47,7 +62,7 @@ public:
         limit_param_()
   {}
 
-  int open_file(const char* path);
+  int open(const char* path);
   int set_table_schema(const share::schema::ObTableSchema* table_schema);
   int set_scan_param(ObVTableScanParam* scan_param);
   inline void set_delimiter(const char* delimiter)
@@ -60,20 +75,23 @@ public:
   }
 
 private:
+  int skip_offset();
+  virtual int inner_get_next_row(ObNewRow*& row);
+
   FILE* fp_;
   const ObVTableScanParam* scan_param_;
   ObIAllocator* allocator_;
-  ObSQLSessionInfo* session_;
+  sql::ObSQLSessionInfo* session_;
   common::ObSEArray<const share::schema::ObColumnSchemaV2*, 16> scan_cols_schema_;
   common::ObNewRow cur_row_;
   const share::schema::ObTableSchema* table_schema_;
   const char* delimiter_;
   share::schema::ObSchemaGetterGuard* schema_guard_;
-  ObLimitParam limit_param_;
+  common::ObLimitParam limit_param_;
   const int64_t BUF_SIZE = 1024;
   DISALLOW_COPY_AND_ASSIGN(ObExternalTableIterator);
 };
-}  // namespace sql
+}  // namespace share
 }  // namespace oceanbase
 
 #endif

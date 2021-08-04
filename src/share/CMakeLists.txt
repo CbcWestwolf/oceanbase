@@ -7,6 +7,10 @@ ob_set_subtarget(ob_share allocator
   allocator/ob_tenant_mutil_allocator_mgr.cpp
 )
 
+ob_set_subtarget(ob_share external_table
+  external_table/ob_external_table_iterator.cpp
+)
+
 ob_set_subtarget(ob_share cache
   cache/ob_kv_storecache.cpp
   cache/ob_kvcache_inst_map.cpp
@@ -110,7 +114,6 @@ ob_set_subtarget(ob_share common
   ob_gts_table_operator.cpp
   ob_upgrade_utils.cpp
   ob_virtual_table_iterator.cpp
-  ob_external_table_iterator.cpp
   ob_virtual_table_projector.cpp
   ob_virtual_table_scanner_iterator.cpp
   ob_web_service_root_addr.cpp
