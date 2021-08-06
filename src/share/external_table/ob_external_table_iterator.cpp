@@ -20,9 +20,20 @@ using oceanbase::sql::ObOperator;
 
 namespace oceanbase {
 namespace share {
+
+int ObExternalTableIterator::open()
+{
+  int ret = OB_SUCCESS;
+
+  if (OB_FAIL(external_loader_->open(table_schema_))) {
+    LOG_WARN("fail to open", K(table_schema_), K(ret));
+  }
+
+  return ret;
+}
+
 void ObExternalTableIterator::reset()
 {
-  fp_ = NULL;
   scan_param_ = NULL;
   scan_cols_schema_.reset();
   if (OB_LIKELY(NULL != allocator_ && NULL != cur_row_.cells_)) {
@@ -31,10 +42,7 @@ void ObExternalTableIterator::reset()
   cur_row_.cells_ = NULL;
   cur_row_.count_ = 0;
   table_schema_ = NULL;
-  delimiter_ = NULL;
-  schema_guard_ = NULL;
-  allocator_ = NULL;
-  session_ = NULL;
+  external_loader_->reset();
 }
 
 int ObExternalTableIterator::close()
@@ -61,18 +69,13 @@ int ObExternalTableIterator::close()
 int ObExternalTableIterator::inner_close()
 {
   int ret = OB_SUCCESS;
-  if (OB_ISNULL(fp_)) {
-    ret = OB_FILE_NOT_OPENED;
-    LOG_WARN("try to close a closed file");
-  } else if (OB_FAIL(fclose(fp_))) {
-    ret = OB_ERR_UNEXPECTED;
-    LOG_WARN("fail to close file", K(fp_));
-  } else {
-    LOG_DEBUG("succ to close file", K(fp_));
+  if (OB_FAIL(external_loader_->close())) {
+    LOG_WARN("fail to close", K(ret));
   }
   return ret;
 }
 
+/*
 int ObExternalTableIterator::inner_get_next_row(ObNewRow*& row)
 {
   int ret = OB_SUCCESS;
@@ -155,6 +158,7 @@ int ObExternalTableIterator::inner_get_next_row(ObNewRow*& row)
 
   return ret;
 }
+*/
 
 int ObExternalTableIterator::get_next_row(ObNewRow*& row)
 {
@@ -228,6 +232,7 @@ int ObExternalTableIterator::get_next_row()
       LOG_WARN(
           "row count less than output exprs", K(ret), K(*row), "output_exprs_cnt", scan_param_->output_exprs_->count());
     } else {
+      /* 在这里实现 filter */
       bool filtered = false;
       for (int64_t i = 0; OB_SUCC(ret) && i < scan_param_->output_exprs_->count(); i++) {
         sql::ObExpr* expr = scan_param_->output_exprs_->at(i);
@@ -258,32 +263,6 @@ int ObExternalTableIterator::get_next_row()
   return ret;
 }
 
-int ObExternalTableIterator::open(const char* path)
-{
-  int ret = OB_SUCCESS;
-
-  if (OB_ISNULL(fp_ = fopen(path, "r"))) {
-    ret = OB_FILE_NOT_EXIST;
-    LOG_WARN("external path not exist", K(path), K(ret));
-  }
-
-  return ret;
-}
-
-int ObExternalTableIterator::skip_offset()
-{
-  int ret = OB_SUCCESS;
-
-  if (limit_param_.offset_ > 0) {
-    char buf[BUF_SIZE];
-    while (OB_NOT_NULL(fgets(buf, BUF_SIZE, fp_)) && (--limit_param_.offset_ > 0)) {
-      ;
-    }
-  }
-
-  return ret;
-}
-
 int ObExternalTableIterator::set_scan_param(ObVTableScanParam* scan_param)
 {
   int ret = OB_SUCCESS;
@@ -293,9 +272,6 @@ int ObExternalTableIterator::set_scan_param(ObVTableScanParam* scan_param)
   } else {
     scan_param_ = scan_param;
     allocator_ = scan_param->scan_allocator_;
-    session_ = scan_param->expr_ctx_.my_session_;
-    limit_param_.offset_ = scan_param->limit_param_.offset_;
-    limit_param_.limit_ = scan_param->limit_param_.limit_;
   }
   return ret;
 }

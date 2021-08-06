@@ -13,7 +13,10 @@
 #ifndef OCEANBASE_OB_EXTERNAL_DATA_ACCESS_SERVICE_H
 #define OCEANBASE_OB_EXTERNAL_DATA_ACCESS_SERVICE_H
 
-#include "share/ob_i_data_access_service.h"
+#include "share/external_table/ob_external_table_iterator.h"
+#include "share/external_table/ob_i_external_loader.h"
+#include "share/external_table/ob_external_file_loader.h"
+#include "share/external_table/ob_external_csv_iterator.h"
 
 namespace oceanbase {
 namespace common {
@@ -23,6 +26,19 @@ class ObVTableScanParam;
 class ObIDataAccessService;
 class ObNewRowIterator;
 }  // namespace common
+
+namespace share {
+class ObExternalFileLoader;
+class ObExternalCSVIterator;
+class ObExternalTableIterator;
+}  // namespace share
+
+namespace share {
+namespace schema {
+
+class ObTableSchema;
+}  // namespace schema
+}  // namespace share
 
 namespace storage {
 class ObTableScanParam;
@@ -54,6 +70,9 @@ public:
   }
 
 private:
+  int get_iterator(ObVTableScanParam& params, const share::schema::ObTableSchema* table_schema,
+      share::ObExternalTableIterator*& iter);
+
   rootserver::ObRootService& root_service_;
   common::ObAddr& addr_;
   common::ObServerConfig* config_;

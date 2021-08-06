@@ -12,7 +12,6 @@
 
 #include "ob_external_data_access_service.h"
 #include "share/schema/ob_schema_getter_guard.h"
-#include "share/external_table/ob_external_table_iterator.h"
 #include "rootserver/ob_root_service.h"
 
 #define USING_LOG_PREFIX SQL
@@ -25,13 +24,13 @@ using oceanbase::common::ObNewRowIterator;
 using rootserver::ObRootService;
 
 namespace oceanbase {
+// namespace share
 namespace sql {
 int ObExternalDataAccessService::table_scan(ObVTableScanParam& params, ObNewRowIterator*& result)
 {
   int ret = OB_SUCCESS;
   const ObTableSchema* table_schema = NULL;
   ObSchemaGetterGuard& schema_guard = params.get_schema_guard();
-  void* buf = NULL;
   ObExternalTableIterator* iter = NULL;
   ObIAllocator& allocator = *params.scan_allocator_;
 
@@ -39,33 +38,75 @@ int ObExternalDataAccessService::table_scan(ObVTableScanParam& params, ObNewRowI
 
   if (OB_FAIL(root_service_.get_schema_service().get_schema_guard(schema_guard))) {
     LOG_WARN("get schema guard failed", K(ret));
-  } else if (OB_ISNULL(buf = static_cast<ObExternalTableIterator*>(allocator.alloc(sizeof(ObExternalTableIterator))))) {
-    ret = OB_ALLOCATE_MEMORY_FAILED;
-    LOG_ERROR("fail to alloc memory", K(ret), K(params.pkey_));
-  } else if (OB_ISNULL(iter = new (buf) ObExternalTableIterator())) {
-    ret = OB_ALLOCATE_MEMORY_FAILED;
-    LOG_ERROR("fail to new", K(ret), K(params.pkey_));
-  } else if (OB_FAIL(iter->set_scan_param(&params))) {
-    ret = OB_ERR_UNEXPECTED;
-    LOG_WARN("fail to set scan param", K(ret), K(params));
   } else if (OB_FAIL(schema_guard.get_table_schema(params.pkey_.table_id_, table_schema))) {
     ret = OB_TABLE_NOT_EXIST;
     LOG_WARN("fail to get table schema", K(ret), K(params.pkey_));
+  } else if (OB_FAIL(get_iterator(params, table_schema, iter))) {
+    LOG_WARN("fail to get iterator", K(ret));
+  } else if (OB_FAIL(iter->set_scan_param(&params))) {
+    ret = OB_ERR_UNEXPECTED;
+    LOG_WARN("fail to set scan param", K(ret), K(params));
   } else if (OB_FAIL(iter->set_table_schema(table_schema))) {
     LOG_WARN("fail to set table schema", K(table_schema));
-    allocator.free(iter);
   } else {
     LOG_DEBUG("external table", K(table_schema->get_external_protocal()), K(table_schema->get_external_format()));
-    iter->set_delimiter(table_schema->get_external_delimiters().ptr());
-    iter->set_schema_guard(&schema_guard);
-    if (OB_FAIL(iter->open(table_schema->get_external_url().ptr()))) {
+    // iter->set_delimiter(table_schema->get_external_delimiters().ptr());
+    if (OB_FAIL(iter->open())) {
       LOG_WARN("fail to open file", K(table_schema->get_external_url()));
-      allocator.free(iter);
     } else {
       result = static_cast<ObNewRowIterator*>(iter);
       LOG_DEBUG("success to set ObExternalTableIterator", K(params));
     }
   }
+  if (OB_FAIL(ret)) {
+    allocator.free(iter);
+  }
+  return ret;
+}
+
+int ObExternalDataAccessService::get_iterator(
+    ObVTableScanParam& params, const ObTableSchema* table_schema, ObExternalTableIterator*& iter)
+{
+  int ret = OB_SUCCESS;
+  void* buf = NULL;
+  ObString protocal = table_schema->get_external_protocal();
+  ObString format = table_schema->get_external_format();
+  ObExternalTableIterator* cur_iter = nullptr;
+  ObIExternalLoader* loader = nullptr;
+  ObIAllocator* allocator = params.scan_allocator_;
+  iter = nullptr;
+
+  // 创建 external loader
+  if (protocal == "file") {
+    if (OB_ISNULL(buf = static_cast<ObExternalFileLoader*>(allocator->alloc(sizeof(ObExternalFileLoader))))) {
+      ret = OB_ALLOCATE_MEMORY_FAILED;
+      LOG_ERROR("fail to alloc memory", K(ret));
+    } else if (OB_ISNULL(loader = new (buf) ObExternalFileLoader(allocator))) {
+      ret = OB_ALLOCATE_MEMORY_FAILED;
+      LOG_ERROR("fail to new", K(ret));
+    }
+  } else {
+    ret = OB_INVALID_ARGUMENT;
+    LOG_WARN("wrong protocal type", K(protocal));
+  }
+
+  if (format == "csv") {
+    if (OB_ISNULL(buf = static_cast<ObExternalCSVIterator*>(allocator->alloc(sizeof(ObExternalCSVIterator))))) {
+      ret = OB_ALLOCATE_MEMORY_FAILED;
+      LOG_ERROR("fail to alloc memory", K(ret));
+    } else if (OB_ISNULL(cur_iter = new (buf) share::ObExternalCSVIterator(loader))) {
+      ret = OB_ALLOCATE_MEMORY_FAILED;
+      LOG_ERROR("fail to new", K(ret));
+    }
+  } else {
+    ret = OB_INVALID_ARGUMENT;
+    LOG_WARN("wrong format type", K(format));
+  }
+
+  if (OB_SUCC(ret)) {
+    iter = cur_iter;
+  }
+
   return ret;
 }
 
