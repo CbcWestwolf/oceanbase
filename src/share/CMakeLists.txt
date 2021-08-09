@@ -10,6 +10,7 @@ ob_set_subtarget(ob_share allocator
 ob_set_subtarget(ob_share external_table
   external_table/ob_external_table_iterator.cpp
   external_table/ob_external_file_loader.cpp
+  external_table/ob_external_oss_loader.cpp
   external_table/ob_external_csv_iterator.cpp
 )
 
@@ -466,4 +467,22 @@ ob_server_add_pchs(share
   ob_common_rpc_proxy.h
 )
 
+add_library(oss INTERFACE)
+
+target_include_directories(oss
+ INTERFACE
+ ${DEP_DIR}/include/apr-1
+ ${DEP_DIR}/include/oss_c_sdk
+ ${DEP_DIR}/include/mxml
+)
+
+target_link_libraries(oss
+ INTERFACE
+ oss_c_sdk
+ ${DEP_DIR}/lib/liboss_c_sdk_static.a
+ ${DEP_DIR}/lib/libaprutil-1.a
+ ${DEP_DIR}/lib/libapr-1.a
+ ${DEP_DIR}/lib/libmxml.a
+)
 ob_server_add_target(ob_share)
+target_link_libraries(ob_share PUBLIC oss)

@@ -1,6 +1,13 @@
 --source mysql_test/test_suite/external_table/include/load_px_data.inc
 
-select * from ext_score;
-select * from ext_score limit 2;
-select * from ext_score limit 2,2;
-select * from ext_score limit 999, 2;
+# file
+select * from file_score;
+select * from file_score limit 2;
+select * from file_score limit 2,2;
+select * from file_score limit 999, 2;
+
+# oss
+select * from oss_score;
+select * from oss_score limit 2;
+select * from oss_score limit 2,2;
+select * from oss_score limit 999, 2;

@@ -30,7 +30,7 @@ namespace share {
 class ObExternalFileLoader : public ObIExternalLoader {
 
 public:
-  ObExternalFileLoader(ObIAllocator* allocator) : allocator_(allocator)
+  ObExternalFileLoader(ObIAllocator* allocator) : ObIExternalLoader(allocator)
   {}
 
   virtual int open(const schema::ObTableSchema* table_schema) override;
@@ -44,7 +44,6 @@ public:
 
 private:
   FILE* fp_;
-  ObIAllocator* allocator_;
 };
 
 }  // namespace share

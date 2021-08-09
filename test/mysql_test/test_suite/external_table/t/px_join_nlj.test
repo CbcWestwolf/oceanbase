@@ -1,11 +1,23 @@
 --source mysql_test/test_suite/external_table/include/load_px_data.inc
 
+# file
 # bc2host
-explain select * from ext_stu, ext_score where ext_stu.sid = ext_score.sid and ext_stu.sid < 12;
+explain select * from file_stu, file_score where file_stu.sid = file_score.sid and file_stu.sid < 12;
 --sorted_result
-select * from ext_stu, ext_score where ext_stu.sid = ext_score.sid and ext_stu.sid < 12;
+select * from file_stu, file_score where file_stu.sid = file_score.sid and file_stu.sid < 12;
 
 # subject 上指定一个选择率，走 NLJ
-explain select * from ext_score, ext_teacher where ext_teacher.subject = ext_score.subject and ext_teacher.tid = 1;
+explain select * from file_score, file_teacher where file_teacher.subject = file_score.subject and file_teacher.tid = 1;
 --sorted_result
-select * from ext_score, ext_teacher where ext_teacher.subject = ext_score.subject and ext_teacher.tid = 1;
+select * from file_score, file_teacher where file_teacher.subject = file_score.subject and file_teacher.tid = 1;
+
+# oss
+# bc2host
+explain select * from oss_stu, oss_score where oss_stu.sid = oss_score.sid and oss_stu.sid < 12;
+--sorted_result
+select * from oss_stu, oss_score where oss_stu.sid = oss_score.sid and oss_stu.sid < 12;
+
+# subject 上指定一个选择率，走 NLJ
+explain select * from oss_score, oss_teacher where oss_teacher.subject = oss_score.subject and oss_teacher.tid = 1;
+--sorted_result
+select * from oss_score, oss_teacher where oss_teacher.subject = oss_score.subject and oss_teacher.tid = 1;

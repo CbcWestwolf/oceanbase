@@ -16,6 +16,7 @@
 #include "share/external_table/ob_external_table_iterator.h"
 #include "share/external_table/ob_i_external_loader.h"
 #include "share/external_table/ob_external_file_loader.h"
+#include "share/external_table/ob_external_oss_loader.h"
 #include "share/external_table/ob_external_csv_iterator.h"
 
 namespace oceanbase {
@@ -30,6 +31,7 @@ class ObNewRowIterator;
 namespace share {
 class ObExternalFileLoader;
 class ObExternalCSVIterator;
+class ObExternalOSSLoader;
 class ObExternalTableIterator;
 }  // namespace share
 

@@ -3,64 +3,137 @@ drop database if exists et_test;
 create database et_test;
 use et_test;
 set recyclebin = 0;
-create external table ext_stu (
+create external table file_stu (
 sid     int,
 name    varchar(32),
 cls     int
 ) external_url='/home/chenbochuan.cbc/data/px/stu.dat';
-create external table ext_teacher (
+create external table file_teacher (
 tid        int,
 name       varchar(32),
 subject    varchar(4)
 ) external_url='/home/chenbochuan.cbc/data/px/teacher.dat';
-create external table ext_score (
+create external table file_score (
 sid     int,
 subject varchar(4),
 score   int
 ) external_url='/home/chenbochuan.cbc/data/px/score.dat';
-explain select * from ext_stu, ext_score where ext_stu.sid = ext_score.sid and ext_stu.sid < 12;
+create external table oss_stu (
+sid     int,
+name    varchar(32),
+cls     int
+) external_url='px/stu.dat' external_protocal='oss';
+create external table oss_teacher (
+tid        int,
+name       varchar(32),
+subject    varchar(4)
+) external_url='px/teacher.dat' external_protocal='oss';
+create external table oss_score (
+sid     int,
+subject varchar(4),
+score   int
+) external_url='px/score.dat' external_protocal='oss';
+explain select * from file_stu, file_score where file_stu.sid = file_score.sid and file_stu.sid < 12;
+Query Plan
+============================================
+|ID|OPERATOR   |NAME      |EST. ROWS|COST  |
+--------------------------------------------
+|0 |HASH JOIN  |          |980100   |764307|
+|1 | TABLE SCAN|file_score|10000    |83017 |
+|2 | TABLE SCAN|file_stu  |10000    |83017 |
+============================================
+
+Outputs & filters: 
+-------------------------------------
+  0 - output([file_stu.sid], [file_stu.name], [file_stu.cls], [file_score.sid], [file_score.subject], [file_score.score]), filter(nil), 
+      equal_conds([file_stu.sid = file_score.sid]), other_conds(nil)
+  1 - output([file_score.sid], [file_score.subject], [file_score.score]), filter([file_score.sid < 12]), 
+      access([file_score.sid], [file_score.subject], [file_score.score]), partitions(p0)
+  2 - output([file_stu.sid], [file_stu.name], [file_stu.cls]), filter([file_stu.sid < 12]), 
+      access([file_stu.sid], [file_stu.name], [file_stu.cls]), partitions(p0)
+
+select * from file_stu, file_score where file_stu.sid = file_score.sid and file_stu.sid < 12;
+sid	name	cls	sid	subject	score
+11	'a1'	1	11	'EN'	60
+11	'a1'	1	11	'MA'	60
+explain select * from file_score, file_teacher where file_teacher.subject = file_score.subject and file_teacher.tid = 1;
+Query Plan
+===============================================
+|ID|OPERATOR   |NAME        |EST. ROWS|COST   |
+-----------------------------------------------
+|0 |HASH JOIN  |            |970299   |1172701|
+|1 | TABLE SCAN|file_teacher|990      |83017  |
+|2 | TABLE SCAN|file_score  |100000   |66272  |
+===============================================
+
+Outputs & filters: 
+-------------------------------------
+  0 - output([file_score.sid], [file_score.subject], [file_score.score], [file_teacher.tid], [file_teacher.name], [file_teacher.subject]), filter(nil), 
+      equal_conds([file_teacher.subject = file_score.subject]), other_conds(nil)
+  1 - output([file_teacher.subject], [file_teacher.tid], [file_teacher.name]), filter([file_teacher.tid = 1]), 
+      access([file_teacher.subject], [file_teacher.tid], [file_teacher.name]), partitions(p0)
+  2 - output([file_score.subject], [file_score.sid], [file_score.score]), filter(nil), 
+      access([file_score.subject], [file_score.sid], [file_score.score]), partitions(p0)
+
+select * from file_score, file_teacher where file_teacher.subject = file_score.subject and file_teacher.tid = 1;
+sid	subject	score	tid	name	subject
+11	'EN'	60	1	'MissZhang'	'EN'
+12	'EN'	70	1	'MissZhang'	'EN'
+13	'EN'	80	1	'MissZhang'	'EN'
+21	'EN'	58	1	'MissZhang'	'EN'
+22	'EN'	90	1	'MissZhang'	'EN'
+31	'EN'	80	1	'MissZhang'	'EN'
+41	'EN'	80	1	'MissZhang'	'EN'
+42	'EN'	90	1	'MissZhang'	'EN'
+51	'EN'	89	1	'MissZhang'	'EN'
+52	'EN'	99	1	'MissZhang'	'EN'
+61	'EN'	100	1	'MissZhang'	'EN'
+62	'EN'	90	1	'MissZhang'	'EN'
+63	'EN'	99	1	'MissZhang'	'EN'
+64	'EN'	87	1	'MissZhang'	'EN'
+explain select * from oss_stu, oss_score where oss_stu.sid = oss_score.sid and oss_stu.sid < 12;
 Query Plan
 ===========================================
 |ID|OPERATOR   |NAME     |EST. ROWS|COST  |
 -------------------------------------------
 |0 |HASH JOIN  |         |980100   |764307|
-|1 | TABLE SCAN|ext_score|10000    |83017 |
-|2 | TABLE SCAN|ext_stu  |10000    |83017 |
+|1 | TABLE SCAN|oss_score|10000    |83017 |
+|2 | TABLE SCAN|oss_stu  |10000    |83017 |
 ===========================================
 
 Outputs & filters: 
 -------------------------------------
-  0 - output([ext_stu.sid], [ext_stu.name], [ext_stu.cls], [ext_score.sid], [ext_score.subject], [ext_score.score]), filter(nil), 
-      equal_conds([ext_stu.sid = ext_score.sid]), other_conds(nil)
-  1 - output([ext_score.sid], [ext_score.subject], [ext_score.score]), filter([ext_score.sid < 12]), 
-      access([ext_score.sid], [ext_score.subject], [ext_score.score]), partitions(p0)
-  2 - output([ext_stu.sid], [ext_stu.name], [ext_stu.cls]), filter([ext_stu.sid < 12]), 
-      access([ext_stu.sid], [ext_stu.name], [ext_stu.cls]), partitions(p0)
+  0 - output([oss_stu.sid], [oss_stu.name], [oss_stu.cls], [oss_score.sid], [oss_score.subject], [oss_score.score]), filter(nil), 
+      equal_conds([oss_stu.sid = oss_score.sid]), other_conds(nil)
+  1 - output([oss_score.sid], [oss_score.subject], [oss_score.score]), filter([oss_score.sid < 12]), 
+      access([oss_score.sid], [oss_score.subject], [oss_score.score]), partitions(p0)
+  2 - output([oss_stu.sid], [oss_stu.name], [oss_stu.cls]), filter([oss_stu.sid < 12]), 
+      access([oss_stu.sid], [oss_stu.name], [oss_stu.cls]), partitions(p0)
 
-select * from ext_stu, ext_score where ext_stu.sid = ext_score.sid and ext_stu.sid < 12;
+select * from oss_stu, oss_score where oss_stu.sid = oss_score.sid and oss_stu.sid < 12;
 sid	name	cls	sid	subject	score
 11	'a1'	1	11	'EN'	60
 11	'a1'	1	11	'MA'	60
-explain select * from ext_score, ext_teacher where ext_teacher.subject = ext_score.subject and ext_teacher.tid = 1;
+explain select * from oss_score, oss_teacher where oss_teacher.subject = oss_score.subject and oss_teacher.tid = 1;
 Query Plan
 ==============================================
 |ID|OPERATOR   |NAME       |EST. ROWS|COST   |
 ----------------------------------------------
 |0 |HASH JOIN  |           |970299   |1172701|
-|1 | TABLE SCAN|ext_teacher|990      |83017  |
-|2 | TABLE SCAN|ext_score  |100000   |66272  |
+|1 | TABLE SCAN|oss_teacher|990      |83017  |
+|2 | TABLE SCAN|oss_score  |100000   |66272  |
 ==============================================
 
 Outputs & filters: 
 -------------------------------------
-  0 - output([ext_score.sid], [ext_score.subject], [ext_score.score], [ext_teacher.tid], [ext_teacher.name], [ext_teacher.subject]), filter(nil), 
-      equal_conds([ext_teacher.subject = ext_score.subject]), other_conds(nil)
-  1 - output([ext_teacher.subject], [ext_teacher.tid], [ext_teacher.name]), filter([ext_teacher.tid = 1]), 
-      access([ext_teacher.subject], [ext_teacher.tid], [ext_teacher.name]), partitions(p0)
-  2 - output([ext_score.subject], [ext_score.sid], [ext_score.score]), filter(nil), 
-      access([ext_score.subject], [ext_score.sid], [ext_score.score]), partitions(p0)
+  0 - output([oss_score.sid], [oss_score.subject], [oss_score.score], [oss_teacher.tid], [oss_teacher.name], [oss_teacher.subject]), filter(nil), 
+      equal_conds([oss_teacher.subject = oss_score.subject]), other_conds(nil)
+  1 - output([oss_teacher.subject], [oss_teacher.tid], [oss_teacher.name]), filter([oss_teacher.tid = 1]), 
+      access([oss_teacher.subject], [oss_teacher.tid], [oss_teacher.name]), partitions(p0)
+  2 - output([oss_score.subject], [oss_score.sid], [oss_score.score]), filter(nil), 
+      access([oss_score.subject], [oss_score.sid], [oss_score.score]), partitions(p0)
 
-select * from ext_score, ext_teacher where ext_teacher.subject = ext_score.subject and ext_teacher.tid = 1;
+select * from oss_score, oss_teacher where oss_teacher.subject = oss_score.subject and oss_teacher.tid = 1;
 sid	subject	score	tid	name	subject
 11	'EN'	60	1	'MissZhang'	'EN'
 12	'EN'	70	1	'MissZhang'	'EN'

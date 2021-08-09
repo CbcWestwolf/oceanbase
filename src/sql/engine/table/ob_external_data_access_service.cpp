@@ -23,6 +23,17 @@ using namespace oceanbase::share;
 using oceanbase::common::ObNewRowIterator;
 using rootserver::ObRootService;
 
+#define GET_EXTERNAL_DATA_LOADER(DataLoader)                                               \
+  do {                                                                                     \
+    if (OB_ISNULL(buf = static_cast<DataLoader*>(allocator->alloc(sizeof(DataLoader))))) { \
+      ret = OB_ALLOCATE_MEMORY_FAILED;                                                     \
+      LOG_ERROR("fail to alloc memory", K(ret));                                           \
+    } else if (OB_ISNULL(loader = new (buf) DataLoader(allocator))) {                      \
+      ret = OB_ALLOCATE_MEMORY_FAILED;                                                     \
+      LOG_ERROR("fail to new", K(ret));                                                    \
+    }                                                                                      \
+  } while (0)
+
 namespace oceanbase {
 // namespace share
 namespace sql {
@@ -78,13 +89,9 @@ int ObExternalDataAccessService::get_iterator(
 
   // 创建 external loader
   if (protocal == "file") {
-    if (OB_ISNULL(buf = static_cast<ObExternalFileLoader*>(allocator->alloc(sizeof(ObExternalFileLoader))))) {
-      ret = OB_ALLOCATE_MEMORY_FAILED;
-      LOG_ERROR("fail to alloc memory", K(ret));
-    } else if (OB_ISNULL(loader = new (buf) ObExternalFileLoader(allocator))) {
-      ret = OB_ALLOCATE_MEMORY_FAILED;
-      LOG_ERROR("fail to new", K(ret));
-    }
+    GET_EXTERNAL_DATA_LOADER(ObExternalFileLoader);
+  } else if (protocal == "oss") {
+    GET_EXTERNAL_DATA_LOADER(ObExternalOSSLoader);
   } else {
     ret = OB_INVALID_ARGUMENT;
     LOG_WARN("wrong protocal type", K(protocal));

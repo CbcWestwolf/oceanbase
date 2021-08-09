@@ -23,11 +23,16 @@ namespace share {
 
 class ObIExternalLoader {
 public:
+  ObIExternalLoader(ObIAllocator* allocator) : allocator_(allocator)
+  {}
   virtual int open(const schema::ObTableSchema* table_schema) = 0;
   virtual int read(char*& buf, long& read_len) = 0;
   virtual bool has_next() = 0;
   virtual int close() = 0;
   virtual void reset() = 0;
+
+protected:
+  ObIAllocator* allocator_;
 };
 }  // namespace share
 }  // namespace oceanbase

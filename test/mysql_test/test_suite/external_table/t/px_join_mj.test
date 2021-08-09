@@ -1,5 +1,11 @@
 --source mysql_test/test_suite/external_table/include/load_px_data.inc
 
-explain select * from ext_stu, ext_score where ext_stu.sid = ext_score.sid order by ext_score.score;
+# file
+explain select * from file_stu, file_score where file_stu.sid = file_score.sid order by file_score.score;
 --sorted_result
-select * from ext_stu, ext_score where ext_stu.sid = ext_score.sid order by ext_score.score;
+select * from file_stu, file_score where file_stu.sid = file_score.sid order by file_score.score;
+
+# oss
+explain select * from oss_stu, oss_score where oss_stu.sid = oss_score.sid order by oss_score.score;
+--sorted_result
+select * from oss_stu, oss_score where oss_stu.sid = oss_score.sid order by oss_score.score;
