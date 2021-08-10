@@ -309,21 +309,27 @@ int ObCreateTableResolver::set_temp_table_info(ObTableSchema& table_schema, Pars
 int ObCreateTableResolver::set_external_table_info(ObTableSchema& table_schema)
 {
   int ret = OB_SUCCESS;
-  if (OB_ISNULL(external_delimiters_) || external_delimiters_.empty()) {
-    external_delimiters_ = ",";
-  }
+
   if (OB_ISNULL(external_protocal_) || external_protocal_.empty()) {
     external_protocal_ = "file";
   }
   if (OB_ISNULL(external_format_) || external_format_.empty()) {
     external_format_ = "csv";
   }
+  if (OB_ISNULL(line_delimiter_) || line_delimiter_.empty()) {
+    line_delimiter_ = "\n";
+  }
+  if (OB_ISNULL(field_delimiter_) || field_delimiter_.empty()) {
+    field_delimiter_ = ",";
+  }
   if (OB_FAIL(set_table_name(table_name_))) {
     LOG_WARN("failed to set table name", K(ret), K(table_name_));
   } else if (external_url_.empty() || OB_FAIL(table_schema.set_external_url(external_url_))) {
     LOG_WARN("failed to set external url", K(ret), K(external_url_));
-  } else if (external_delimiters_.empty() || OB_FAIL(table_schema.set_external_delimiters(external_delimiters_))) {
-    LOG_WARN("failed to set external delimiters", K(ret), K(external_delimiters_));
+  } else if (field_delimiter_.empty() || OB_FAIL(table_schema.set_field_delimiter(field_delimiter_))) {
+    LOG_WARN("failed to set field delimiters", K(ret), K(field_delimiter_));
+  } else if (line_delimiter_.empty() || OB_FAIL(table_schema.set_line_delimiter(line_delimiter_))) {
+    LOG_WARN("failed to set field delimiters", K(ret), K(line_delimiter_));
   } else if (external_protocal_.empty() || OB_FAIL(table_schema.set_external_protocal(external_protocal_))) {
     LOG_WARN("failed to set external protocal", K(ret), K(external_protocal_));
   } else if (external_format_.empty() || OB_FAIL(table_schema.set_external_format(external_format_))) {

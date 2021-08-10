@@ -53,8 +53,8 @@ private:
   const int BUFFER_SIZE = 1024;
   char* cur_line_;
   sql::ObSQLSessionInfo* session_;
-  const char* line_delimiter_;
-  const char* field_delimiter_;
+  ObString line_delimiter_;
+  ObString field_delimiter_;
   ObLimitParam limit_param_;
 };
 

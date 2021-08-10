@@ -91,9 +91,10 @@ ObDDLResolver::ObDDLResolver(ObResolverParams& params)
       table_dop_(DEFAULT_TABLE_DOP),
       hash_subpart_num_(-1),
       external_url_(),
-      external_delimiters_(),
       external_protocal_(),
-      external_format_()
+      external_format_(),
+      line_delimiter_(),
+      field_delimiter_()
 {
   table_mode_.reset();
 }
@@ -1658,18 +1659,33 @@ int ObDDLResolver::resolve_table_option(const ParseNode* option_node, const bool
         }
         break;
       }
-      case T_EXTERNAL_DELIMITERS: {
-        ObString my_external_del;
+      case T_FIELD_DELIMITER: {
+        ObString my_field_delimiter;
         if (nullptr == option_node->children_ || 1 != option_node->num_child_) {
           ret = common::OB_INVALID_ARGUMENT;
-          SQL_RESV_LOG(WARN, "invalid external delimiters arg", K(ret), "num_child", option_node->num_child_);
+          SQL_RESV_LOG(WARN, "invalid field delimiters arg", K(ret), "num_child", option_node->num_child_);
         } else if (nullptr == option_node->children_[0]) {
           ret = OB_ERR_UNEXPECTED;
           SQL_RESV_LOG(WARN, "option node child is null", K(ret));
         } else {
-          my_external_del.assign_ptr(const_cast<char*>(option_node->children_[0]->str_value_),
+          my_field_delimiter.assign_ptr(const_cast<char*>(option_node->children_[0]->str_value_),
               static_cast<int32_t>(option_node->children_[0]->str_len_));
-          external_delimiters_ = my_external_del;
+          field_delimiter_ = my_field_delimiter;
+        }
+        break;
+      }
+      case T_LINE_DELIMITER: {
+        ObString my_line_delimiter;
+        if (nullptr == option_node->children_ || 1 != option_node->num_child_) {
+          ret = common::OB_INVALID_ARGUMENT;
+          SQL_RESV_LOG(WARN, "invalid line delimiters arg", K(ret), "num_child", option_node->num_child_);
+        } else if (nullptr == option_node->children_[0]) {
+          ret = OB_ERR_UNEXPECTED;
+          SQL_RESV_LOG(WARN, "option node child is null", K(ret));
+        } else {
+          my_line_delimiter.assign_ptr(const_cast<char*>(option_node->children_[0]->str_value_),
+              static_cast<int32_t>(option_node->children_[0]->str_len_));
+          line_delimiter_ = my_line_delimiter;
         }
         break;
       }

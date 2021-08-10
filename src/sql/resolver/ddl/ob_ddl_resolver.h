@@ -508,9 +508,10 @@ protected:
   int64_t table_dop_;  // default value is 1
   int64_t hash_subpart_num_;
   common::ObString external_url_;
-  common::ObString external_delimiters_;
   common::ObString external_protocal_;
   common::ObString external_format_;
+  common::ObString line_delimiter_;
+  common::ObString field_delimiter_;
 
 private:
   template <typename STMT>

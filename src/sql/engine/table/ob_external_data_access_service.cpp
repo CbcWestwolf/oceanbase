@@ -61,7 +61,6 @@ int ObExternalDataAccessService::table_scan(ObVTableScanParam& params, ObNewRowI
     LOG_WARN("fail to set table schema", K(table_schema));
   } else {
     LOG_DEBUG("external table", K(table_schema->get_external_protocal()), K(table_schema->get_external_format()));
-    // iter->set_delimiter(table_schema->get_external_delimiters().ptr());
     if (OB_FAIL(iter->open())) {
       LOG_WARN("fail to open file", K(table_schema->get_external_url()));
     } else {

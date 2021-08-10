@@ -32,16 +32,16 @@ create external table oss_stu (
   sid     int,
   name    varchar(32),
   cls     int
-) external_url='px/stu.dat' external_protocal='oss';
+) external_url='px/stu.dat', external_protocal='oss';
 
 create external table oss_teacher (
   tid        int,
   name       varchar(32),
   subject    varchar(4)
-) external_url='px/teacher.dat' external_protocal='oss';
+) external_url='px/teacher.dat', external_protocal='oss';
 
 create external table oss_score (
   sid     int,
   subject varchar(4),
   score   int
-) external_url='px/score.dat' external_protocal='oss';
+) external_url='px/score.dat', external_protocal='oss';

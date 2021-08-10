@@ -25,6 +25,8 @@ class ObIExternalLoader {
 public:
   ObIExternalLoader(ObIAllocator* allocator) : allocator_(allocator)
   {}
+  virtual ~ObIExternalLoader()
+  {}
   virtual int open(const schema::ObTableSchema* table_schema) = 0;
   virtual int read(char*& buf, long& read_len) = 0;
   virtual bool has_next() = 0;

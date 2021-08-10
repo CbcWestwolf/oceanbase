@@ -39,14 +39,14 @@ int ObExternalCSVIterator::inner_get_next_row(ObNewRow*& row)
   // 从 buf_ 中分割出当前的行
   if (OB_SUCC(ret)) {
 
-    cur_line_ = strtok(cur_line_, line_delimiter_);
+    cur_line_ = strtok(cur_line_, line_delimiter_.ptr());
     if (OB_ISNULL(cur_line_)) {
       ret = OB_ITER_END;
     }
 
     // 跳过 offset
     if (OB_SUCC(ret) && limit_param_.offset_ > 0) {
-      while (OB_NOT_NULL(cur_line_ = strtok(NULL, line_delimiter_)) && (--limit_param_.offset_ > 0)) {
+      while (OB_NOT_NULL(cur_line_ = strtok(NULL, line_delimiter_.ptr())) && (--limit_param_.offset_ > 0)) {
         ;
       }
     }
@@ -74,13 +74,16 @@ int ObExternalCSVIterator::inner_get_next_row(ObNewRow*& row)
       LOG_WARN("Fail to copy string", K(cur_line_));
     }
     cur_line_ += size + 1;
+    if (size >= 1 && line[size - 1] == '\n') {
+      line[--size] = '\0';
+    }
 
     if (OB_SUCC(ret)) {
-      token = strtok(line, field_delimiter_);
+      token = strtok(line, field_delimiter_.ptr());
 
       while (OB_SUCC(ret) && NULL != token) {
         ret = tokens.push_back(ObString(token));
-        token = strtok(NULL, field_delimiter_);
+        token = strtok(NULL, field_delimiter_.ptr());
       }
       if (OB_FAIL(ret) || tokens.count() < scan_cols_schema_.count() ||
           tokens.count() != table_schema_->get_column_count() - (table_schema_->is_no_pk_table() ? 1 : 0)) {
@@ -157,8 +160,8 @@ void ObExternalCSVIterator::reset()
   */
   cur_line_ = nullptr;
   session_ = nullptr;
-  line_delimiter_ = nullptr;
-  field_delimiter_ = nullptr;
+  line_delimiter_.reset();
+  field_delimiter_.reset();
   limit_param_.offset_ = 0;
   limit_param_.limit_ = 0;
   ObExternalTableIterator::reset();
@@ -171,7 +174,8 @@ int ObExternalCSVIterator::set_table_schema(const share::schema::ObTableSchema* 
     LOG_WARN("fail to set table schema", K(table_schema));
   }
 
-  // TODO 在这里从 table_schema 中获取 line_delimiter_ 和 field_delimiter_
+  line_delimiter_ = table_schema->get_line_delimiter();
+  field_delimiter_ = table_schema->get_field_delimiter();
 
   return ret;
 }

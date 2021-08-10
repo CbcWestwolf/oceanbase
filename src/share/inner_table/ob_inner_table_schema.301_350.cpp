@@ -2815,25 +2815,6 @@ int ObInnerTableSchema::all_external_table_schema(ObTableSchema &table_schema)
   }
 
   if (OB_SUCC(ret)) {
-    ObObj external_delimiters_default;
-    external_delimiters_default.set_varchar(ObString::make_string(""));
-    ADD_COLUMN_SCHEMA_T("external_delimiters", //column_name
-      ++column_id, //column_id
-      0, //rowkey_id
-      0, //index_id
-      0, //part_key_pos
-      ObVarcharType, //column_type
-      CS_TYPE_INVALID, //column_collation_type
-      OB_MAX_HOST_NAME_LENGTH, //column_length
-      -1, //column_precision
-      -1, //column_scale
-      false, //is_nullable
-      false, //is_autoincrement
-      external_delimiters_default,
-      external_delimiters_default); //default_value
-  }
-
-  if (OB_SUCC(ret)) {
     ObObj external_protocal_default;
     external_protocal_default.set_varchar(ObString::make_string(""));
     ADD_COLUMN_SCHEMA_T("external_protocal", //column_name
@@ -2869,6 +2850,44 @@ int ObInnerTableSchema::all_external_table_schema(ObTableSchema &table_schema)
       false, //is_autoincrement
       external_format_default,
       external_format_default); //default_value
+  }
+
+  if (OB_SUCC(ret)) {
+    ObObj line_delimiter_default;
+    line_delimiter_default.set_varchar(ObString::make_string(""));
+    ADD_COLUMN_SCHEMA_T("line_delimiter", //column_name
+      ++column_id, //column_id
+      0, //rowkey_id
+      0, //index_id
+      0, //part_key_pos
+      ObVarcharType, //column_type
+      CS_TYPE_INVALID, //column_collation_type
+      OB_MAX_HOST_NAME_LENGTH, //column_length
+      -1, //column_precision
+      -1, //column_scale
+      false, //is_nullable
+      false, //is_autoincrement
+      line_delimiter_default,
+      line_delimiter_default); //default_value
+  }
+
+  if (OB_SUCC(ret)) {
+    ObObj field_delimiter_default;
+    field_delimiter_default.set_varchar(ObString::make_string(""));
+    ADD_COLUMN_SCHEMA_T("field_delimiter", //column_name
+      ++column_id, //column_id
+      0, //rowkey_id
+      0, //index_id
+      0, //part_key_pos
+      ObVarcharType, //column_type
+      CS_TYPE_INVALID, //column_collation_type
+      OB_MAX_HOST_NAME_LENGTH, //column_length
+      -1, //column_precision
+      -1, //column_scale
+      false, //is_nullable
+      false, //is_autoincrement
+      field_delimiter_default,
+      field_delimiter_default); //default_value
   }
   if (OB_SUCC(ret)) {
     table_schema.get_part_option().set_part_func_type(PARTITION_FUNC_TYPE_KEY);
