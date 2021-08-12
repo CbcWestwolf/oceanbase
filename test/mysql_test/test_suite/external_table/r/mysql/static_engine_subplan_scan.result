@@ -3,7 +3,7 @@ drop database if exists et_test;
 create database et_test;
 use et_test;
 set recyclebin = 0;
-create external table ext_t1 (c1 int, c2 int) external_url = '/home/chenbochuan.cbc/data/static_engine/t2.dat';
+create external table ext_t1 (c1 int, c2 int) external_url = '/home/chenbochuan.cbc/data/static_engine/t2.txt';
 explain select c2, sum(c1) from (select distinct c2, c1 from ext_t1) x group by c2;
 Query Plan
 ============================================

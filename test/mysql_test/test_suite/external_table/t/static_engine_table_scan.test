@@ -13,7 +13,7 @@ create external table ext_t1 (
   c2 number, 
   c3 char(20), 
   c4 varchar(20)
-) external_url = '/home/chenbochuan.cbc/data/static_engine/t1.dat';
+) external_url = '/home/chenbochuan.cbc/data/static_engine/t1.txt';
 
 # base table
 select * from ext_t1;

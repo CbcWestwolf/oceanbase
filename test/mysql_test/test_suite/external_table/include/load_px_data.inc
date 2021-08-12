@@ -14,34 +14,34 @@ create external table file_stu (
   sid     int,
   name    varchar(32),
   cls     int
-) external_url='/home/chenbochuan.cbc/data/px/stu.dat';
+) external_url='/home/chenbochuan.cbc/data/px/stu.txt';
 
 create external table file_teacher (
   tid        int,
   name       varchar(32),
   subject    varchar(4)
-) external_url='/home/chenbochuan.cbc/data/px/teacher.dat';
+) external_url='/home/chenbochuan.cbc/data/px/teacher.txt';
 
 create external table file_score (
   sid     int,
   subject varchar(4),
   score   int
-) external_url='/home/chenbochuan.cbc/data/px/score.dat';
+) external_url='/home/chenbochuan.cbc/data/px/score.txt';
 
 create external table oss_stu (
   sid     int,
   name    varchar(32),
   cls     int
-) external_url='px/stu.dat', external_protocal='oss';
+) external_url='px/stu.txt', external_protocal='oss';
 
 create external table oss_teacher (
   tid        int,
   name       varchar(32),
   subject    varchar(4)
-) external_url='px/teacher.dat', external_protocal='oss';
+) external_url='px/teacher.txt', external_protocal='oss';
 
 create external table oss_score (
   sid     int,
   subject varchar(4),
   score   int
-) external_url='px/score.dat', external_protocal='oss';
+) external_url='px/score.txt', external_protocal='oss';
