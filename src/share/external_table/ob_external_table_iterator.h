@@ -33,13 +33,22 @@ class ObColumnSchemaV2;
 namespace share {
 class ObIExternalLoader;
 
+union DataSource {
+  DataSource()
+  {}
+  struct {
+    char* ptr_;
+    long buf_size_;
+  } buffer;
+  void* other_handler_;
+};
+
 class ObExternalTableIterator : public ObNewRowIterator {
 public:
   ObExternalTableIterator(ObIExternalLoader* external_loader)
       : external_loader_(external_loader),
         table_schema_(NULL),
-        buf_(NULL),
-        read_len_(0L),
+        data_source_(),
         scan_param_(NULL),
         allocator_(NULL),
         scan_cols_schema_(),
@@ -64,8 +73,7 @@ protected:
 
   ObIExternalLoader* external_loader_;
   const share::schema::ObTableSchema* table_schema_;
-  char* buf_;
-  long read_len_;
+  union DataSource data_source_;
   const ObVTableScanParam* scan_param_;
   ObIAllocator* allocator_;
   common::ObSEArray<const share::schema::ObColumnSchemaV2*, 16> scan_cols_schema_;

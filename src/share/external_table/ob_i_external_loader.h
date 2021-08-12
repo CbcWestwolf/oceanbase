@@ -28,7 +28,7 @@ public:
   virtual ~ObIExternalLoader()
   {}
   virtual int open(const schema::ObTableSchema* table_schema) = 0;
-  virtual int read(char*& buf, long& read_len) = 0;
+  virtual int read(union DataSource& data_source) = 0;
   virtual bool has_next() = 0;
   virtual int close() = 0;
   virtual void reset() = 0;

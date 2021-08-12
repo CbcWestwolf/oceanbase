@@ -29,7 +29,7 @@ int ObExternalFileLoader::open(const schema::ObTableSchema* table_schema)
   return ret;
 }
 
-int ObExternalFileLoader::read(char*& buf, long& read_len)
+int ObExternalFileLoader::read(union DataSource& data_source)
 {
   int ret = OB_SUCCESS;
   char* cur_buf = nullptr;
@@ -41,23 +41,25 @@ int ObExternalFileLoader::read(char*& buf, long& read_len)
   } else if (OB_FAIL(fseek(fp_, 0L, SEEK_END))) {
     ret = OB_ERR_UNEXPECTED;
     LOG_WARN("fail to locate to the end of file", K(ret));
-  } else if (OB_UNLIKELY(-1 == (read_len = ftell(fp_)))) {
+  } else if (OB_UNLIKELY(-1 == (data_source.buffer.buf_size_ = ftell(fp_)))) {
     ret = OB_ERR_UNEXPECTED;
     LOG_WARN("fail to get the length of the file", K(ret));
-  } else if (OB_ISNULL(cur_buf = static_cast<char*>(allocator_->alloc(sizeof(char) * (read_len + 1))))) {
+  } else if (OB_ISNULL(
+                 cur_buf = static_cast<char*>(allocator_->alloc(sizeof(char) * (data_source.buffer.buf_size_ + 1))))) {
     ret = OB_ALLOCATE_MEMORY_FAILED;
     LOG_WARN("fail to alloc new obj", K(ret));
   } else if (OB_FAIL(fseek(fp_, 0L, SEEK_SET))) {
     ret = OB_ERR_UNEXPECTED;
     allocator_->free(cur_buf);
     LOG_WARN("fail to locate to the begin of file", K(ret));
-  } else if (OB_UNLIKELY(0 == (read_len = fread(cur_buf, sizeof(char), read_len, fp_)))) {
+  } else if (OB_UNLIKELY(0 == (data_source.buffer.buf_size_ =
+                                      fread(cur_buf, sizeof(char), data_source.buffer.buf_size_, fp_)))) {
     ret = OB_ERR_UNEXPECTED;
     allocator_->free(cur_buf);
     LOG_WARN("fail to fread the file", K(ret), K(ferror(fp_)));
   } else {
-    cur_buf[read_len] = '\0';
-    buf = cur_buf;
+    cur_buf[data_source.buffer.buf_size_] = '\0';
+    data_source.buffer.ptr_ = cur_buf;
   }
 
   return ret;

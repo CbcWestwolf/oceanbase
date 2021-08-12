@@ -57,7 +57,7 @@ int ObExternalOSSLoader::open(const schema::ObTableSchema* table_schema)
   return ret;
 }
 
-int ObExternalOSSLoader::read(char*& buf, long& read_len)
+int ObExternalOSSLoader::read(union DataSource& data_source)
 {
   int ret = OB_SUCCESS;
 
@@ -71,24 +71,27 @@ int ObExternalOSSLoader::read(char*& buf, long& read_len)
   aos_status_t* resp_status = NULL;
   int64_t size = 0;
   int64_t pos = 0;
+  char* cur_buf = nullptr;
   aos_str_set(&bucket, BUCKET_NAME);
   aos_str_set(&object, location_.ptr());
   aos_list_init(&buffer_);
 
   resp_status =
       oss_get_object_to_buffer(oss_client_options_, &bucket, &object, headers, params, &buffer_, &resp_headers);
+  data_source.buffer.ptr_ = nullptr;
 
   if (aos_status_is_ok(resp_status)) {
-    read_len = aos_buf_list_len(&buffer_);
-    buf = static_cast<char*>(allocator_->alloc(sizeof(char) * (read_len + 1)));
-    buf[read_len] = '\0';
+    data_source.buffer.buf_size_ = aos_buf_list_len(&buffer_);
+    cur_buf = static_cast<char*>(allocator_->alloc(sizeof(char) * (data_source.buffer.buf_size_ + 1)));
+    cur_buf[data_source.buffer.buf_size_] = '\0';
     aos_list_for_each_entry(aos_buf_t, content, &buffer_, node)
     {
       size = aos_buf_size(content);
-      memcpy(buf + pos, content->pos, size);
+      memcpy(cur_buf + pos, content->pos, size);
       pos += size;
     }
     has_read_ = true;
+    data_source.buffer.ptr_ = cur_buf;
   } else {
     ret = OB_ERR_UNEXPECTED;
     LOG_WARN("fail to read oss", K(ret), K(resp_status));

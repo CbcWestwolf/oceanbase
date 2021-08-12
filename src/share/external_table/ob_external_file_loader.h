@@ -38,7 +38,7 @@ public:
   {
     return OB_NOT_NULL(fp_) && !feof(fp_);
   }
-  virtual int read(char*& buf, long& read_len) override;
+  virtual int read(union DataSource& data_source) override;
   virtual int close() override;
   virtual void reset() override;
 

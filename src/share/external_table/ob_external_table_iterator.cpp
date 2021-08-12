@@ -42,6 +42,9 @@ void ObExternalTableIterator::reset()
   cur_row_.cells_ = NULL;
   cur_row_.count_ = 0;
   table_schema_ = NULL;
+  data_source_.buffer.ptr_ = nullptr;
+  data_source_.buffer.buf_size_ = 0;
+  data_source_.other_handler_ = nullptr;
   external_loader_->reset();
 }
 

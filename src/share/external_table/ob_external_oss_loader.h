@@ -34,7 +34,7 @@ public:
       : ObIExternalLoader(allocator), location_(nullptr), has_read_(false), oss_client_options_(nullptr)
   {}
   virtual int open(const schema::ObTableSchema* table_schema) override;
-  virtual int read(char*& buf, long& read_len) override;
+  virtual int read(union DataSource& data_source) override;
   inline bool has_next() override
   {
     return !has_read_;

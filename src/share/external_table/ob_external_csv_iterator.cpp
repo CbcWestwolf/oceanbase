@@ -23,20 +23,20 @@ int ObExternalCSVIterator::inner_get_next_row(ObNewRow*& row)
   ObSEArray<ObString, 16> tokens;
   char line[BUFFER_SIZE];
 
-  LOG_DEBUG("read buffer", K(buf_), K(read_len_));
+  LOG_DEBUG("read buffer", K(data_source_.buffer.ptr_), K(data_source_.buffer.buf_size_));
   LOG_DEBUG("cur_line_", K(cur_line_));
 
-  // 获取 buf_
-  if (OB_ISNULL(buf_)) {
+  // 获取 data_source_.buffer.ptr_
+  if (OB_ISNULL(data_source_.buffer.ptr_)) {
     if (!external_loader_->has_next()) {
       ret = OB_ITER_END;
-    } else if (OB_FAIL(external_loader_->read(buf_, read_len_))) {
+    } else if (OB_FAIL(external_loader_->read(data_source_))) {
       LOG_WARN("fail to read data", K(ret));
     }
-    cur_line_ = buf_;
+    cur_line_ = data_source_.buffer.ptr_;
   }
 
-  // 从 buf_ 中分割出当前的行
+  // 从 data_source_.buffer.ptr_ 中分割出当前的行
   if (OB_SUCC(ret)) {
 
     cur_line_ = strtok(cur_line_, line_delimiter_.ptr());
