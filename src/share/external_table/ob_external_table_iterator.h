@@ -40,7 +40,6 @@ union DataSource {
     char* ptr_;
     long buf_size_;
   } buffer;
-  void* other_handler_;
 };
 
 class ObExternalTableIterator : public ObNewRowIterator {
@@ -52,7 +51,8 @@ public:
         scan_param_(NULL),
         allocator_(NULL),
         scan_cols_schema_(),
-        cur_row_()
+        cur_row_(),
+        session_(nullptr)
   {}
 
   virtual ~ObExternalTableIterator()
@@ -78,6 +78,8 @@ protected:
   ObIAllocator* allocator_;
   common::ObSEArray<const share::schema::ObColumnSchemaV2*, 16> scan_cols_schema_;
   common::ObNewRow cur_row_;
+  sql::ObSQLSessionInfo* session_;
+  ObLimitParam limit_param_;
 
   DISALLOW_COPY_AND_ASSIGN(ObExternalTableIterator);
 };

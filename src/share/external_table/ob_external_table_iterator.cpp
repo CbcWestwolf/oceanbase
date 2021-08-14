@@ -44,7 +44,9 @@ void ObExternalTableIterator::reset()
   table_schema_ = NULL;
   data_source_.buffer.ptr_ = nullptr;
   data_source_.buffer.buf_size_ = 0;
-  data_source_.other_handler_ = nullptr;
+  session_ = nullptr;
+  limit_param_.offset_ = 0;
+  limit_param_.limit_ = 0;
   external_loader_->reset();
 }
 
@@ -275,6 +277,9 @@ int ObExternalTableIterator::set_scan_param(ObVTableScanParam* scan_param)
   } else {
     scan_param_ = scan_param;
     allocator_ = scan_param->scan_allocator_;
+    limit_param_.offset_ = scan_param->limit_param_.offset_;
+    limit_param_.limit_ = scan_param->limit_param_.limit_;
+    session_ = scan_param->expr_ctx_.my_session_;
   }
   return ret;
 }

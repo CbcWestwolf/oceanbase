@@ -137,33 +137,16 @@ int ObExternalCSVIterator::inner_get_next_row(ObNewRow*& row)
   return ret;
 }
 
-int ObExternalCSVIterator::set_scan_param(ObVTableScanParam* scan_param)
-{
-  int ret = OB_SUCCESS;
-  if (OB_FAIL(ObExternalTableIterator::set_scan_param(scan_param))) {
-    LOG_WARN("fail to set scan param", K(scan_param));
-  }
-  limit_param_.offset_ = scan_param->limit_param_.offset_;
-  limit_param_.limit_ = scan_param->limit_param_.limit_;
-  session_ = scan_param->expr_ctx_.my_session_;
-  return ret;
-}
-
 void ObExternalCSVIterator::reset()
 {
   /*
   char* cur_line_;
-  sql::ObSQLSessionInfo* session_;
   const char* line_delimiter_;
   const char* field_delimiter_;
-  common::ObLimitParam limit_param_;
   */
   cur_line_ = nullptr;
-  session_ = nullptr;
   line_delimiter_.reset();
   field_delimiter_.reset();
-  limit_param_.offset_ = 0;
-  limit_param_.limit_ = 0;
   ObExternalTableIterator::reset();
 }
 

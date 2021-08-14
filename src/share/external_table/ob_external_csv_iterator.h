@@ -38,27 +38,20 @@ namespace share {
 class ObExternalCSVIterator : public ObExternalTableIterator {
 public:
   ObExternalCSVIterator(ObIExternalLoader* external_loader)
-      : ObExternalTableIterator(external_loader),
-        cur_line_(nullptr),
-        session_(nullptr),
-        line_delimiter_("\n"),
-        field_delimiter_(",")
+      : ObExternalTableIterator(external_loader), cur_line_(nullptr), line_delimiter_("\n"), field_delimiter_(",")
   {
     data_source_.buffer.ptr_ = nullptr;
     data_source_.buffer.buf_size_ = 0L;
   }
   virtual int inner_get_next_row(ObNewRow*& row) override;
-  virtual int set_scan_param(ObVTableScanParam* scan_param) override;
   virtual int set_table_schema(const schema::ObTableSchema* table_schema) override;
   virtual void reset() override;
 
 private:
   const int BUFFER_SIZE = 1024;
   char* cur_line_;
-  sql::ObSQLSessionInfo* session_;
   ObString line_delimiter_;
   ObString field_delimiter_;
-  ObLimitParam limit_param_;
 };
 
 }  // namespace share

@@ -34,6 +34,17 @@ using rootserver::ObRootService;
     }                                                                                      \
   } while (0)
 
+#define GET_EXTERNAL_ITERATOR(ExternlIterator)                                                       \
+  do {                                                                                               \
+    if (OB_ISNULL(buf = static_cast<ExternlIterator*>(allocator->alloc(sizeof(ExternlIterator))))) { \
+      ret = OB_ALLOCATE_MEMORY_FAILED;                                                               \
+      LOG_ERROR("fail to alloc memory", K(ret));                                                     \
+    } else if (OB_ISNULL(cur_iter = new (buf) share::ExternlIterator(loader))) {                     \
+      ret = OB_ALLOCATE_MEMORY_FAILED;                                                               \
+      LOG_ERROR("fail to new", K(ret));                                                              \
+    }                                                                                                \
+  } while (0)
+
 namespace oceanbase {
 // namespace share
 namespace sql {
@@ -97,13 +108,7 @@ int ObExternalDataAccessService::get_iterator(
   }
 
   if (format == "csv") {
-    if (OB_ISNULL(buf = static_cast<ObExternalCSVIterator*>(allocator->alloc(sizeof(ObExternalCSVIterator))))) {
-      ret = OB_ALLOCATE_MEMORY_FAILED;
-      LOG_ERROR("fail to alloc memory", K(ret));
-    } else if (OB_ISNULL(cur_iter = new (buf) share::ObExternalCSVIterator(loader))) {
-      ret = OB_ALLOCATE_MEMORY_FAILED;
-      LOG_ERROR("fail to new", K(ret));
-    }
+    GET_EXTERNAL_ITERATOR(ObExternalCSVIterator);
   } else {
     ret = OB_INVALID_ARGUMENT;
     LOG_WARN("wrong format type", K(format));
