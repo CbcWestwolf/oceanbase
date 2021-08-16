@@ -2805,7 +2805,7 @@ int ObInnerTableSchema::all_external_table_schema(ObTableSchema &table_schema)
       0, //part_key_pos
       ObVarcharType, //column_type
       CS_TYPE_INVALID, //column_collation_type
-      OB_MAX_HOST_NAME_LENGTH, //column_length
+      512, //column_length
       -1, //column_precision
       -1, //column_scale
       false, //is_nullable

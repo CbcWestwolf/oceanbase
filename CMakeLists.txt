@@ -9,7 +9,7 @@ project("OceanBase CE"
   HOMEPAGE_URL "https://www.oceanbase.com/"
   LANGUAGES CXX C ASM)
 
-ob_define(WITH_OSS OFF)
+ob_define(WITH_OSS ON)
 
 if(ENABLE_DEBUG_LOG)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DENABLE_DEBUG_LOG")

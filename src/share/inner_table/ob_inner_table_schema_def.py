@@ -4477,7 +4477,7 @@ def_table_schema(
 
   normal_columns = [
     ('create_host', 'varchar:OB_MAX_HOST_NAME_LENGTH', 'false', ''),
-    ('external_url', 'varchar:OB_MAX_HOST_NAME_LENGTH', 'false', ''),
+    ('external_url', 'varchar:512', 'false', ''),
     ('external_protocal', 'varchar:OB_MAX_HOST_NAME_LENGTH', 'false', ''),
     ('external_format', 'varchar:OB_MAX_HOST_NAME_LENGTH', 'false', ''),
     ('line_delimiter', 'varchar:OB_MAX_HOST_NAME_LENGTH', 'false', ''),

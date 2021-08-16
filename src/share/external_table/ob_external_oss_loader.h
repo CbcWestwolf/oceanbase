@@ -13,11 +13,6 @@
 #ifndef OCEANBASE_SHARE_TABLE_OB_EXTERNAL_OSS_LOADER_H
 #define OCEANBASE_SHARE_TABLE_OB_EXTERNAL_OSS_LOADER_H
 
-#include <linux/limits.h>
-#include <apr-1/apr_portable.h>
-#include <oss_c_sdk/oss_api.h>
-#include <oss_c_sdk/aos_http_io.h>
-
 #include "ob_i_external_loader.h"
 
 namespace oceanbase {
@@ -26,12 +21,12 @@ namespace schema {
 class ObTableSchema;
 }
 }  // namespace share
+
 namespace share {
 
 class ObExternalOSSLoader : public ObIExternalLoader {
 public:
-  ObExternalOSSLoader(ObIAllocator* allocator)
-      : ObIExternalLoader(allocator), location_(nullptr), has_read_(false), oss_client_options_(nullptr)
+  ObExternalOSSLoader(ObIAllocator* allocator) : ObIExternalLoader(allocator), file_size_(-1), has_read_(false)
   {}
   virtual int open(const schema::ObTableSchema* table_schema) override;
   virtual int read(union DataSource& data_source) override;
@@ -43,18 +38,11 @@ public:
   virtual void reset() override;
 
 private:
-  void parse_url();
-  void init_options();
-
-  const char* ENDPOINT = "oss-cn-hangzhou.aliyuncs.com";
-  const char* ACCESS_KEY_ID = "";
-  const char* ACCESS_KEY_SECRET = "";
-  const char* BUCKET_NAME = "external-table";
-  ObString location_;
+  ObStorageOssReader oss_reader_;
+  ObString file_name_;
+  ObString access_info_;
+  int64_t file_size_;
   bool has_read_;
-  aos_list_t buffer_;
-  oss_request_options_t* oss_client_options_;
-  aos_pool_t* pool_; /* 用于内存管理的内存池（pool），等价于apr_pool_t。其实现代码在apr库中。*/
 };
 
 }  // namespace share
