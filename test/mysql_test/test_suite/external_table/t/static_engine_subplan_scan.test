@@ -8,16 +8,16 @@ use et_test;
 # # 关闭 recyclebin
 set recyclebin = 0;
 
-create external table ext_t1 (c1 int, c2 int) external_url = '/home/chenbochuan.cbc/data/static_engine/t2.txt';
+create external table ext_t2 (c1 int, c2 int) external_url = '/home/chenbochuan.cbc/data/static_engine/t2.csv';
 
-explain select c2, sum(c1) from (select distinct c2, c1 from ext_t1) x group by c2;
-select c2, sum(c1) from (select distinct c2, c1 from ext_t1) x group by c2;
+explain select c2, sum(c1) from (select distinct c2, c1 from ext_t2) x group by c2;
+select c2, sum(c1) from (select distinct c2, c1 from ext_t2) x group by c2;
 
-explain select c2, sum(c1 + c2) from (select distinct c2, c1 from ext_t1) x group by c2;
-select c2, sum(c1 + c2) from (select distinct c2, c1 from ext_t1) x group by c2;
+explain select c2, sum(c1 + c2) from (select distinct c2, c1 from ext_t2) x group by c2;
+select c2, sum(c1 + c2) from (select distinct c2, c1 from ext_t2) x group by c2;
 
-explain select c2, sum(c1 + c2), max(c3) from (select c1, c2, c1 + 2 as c3 from (select distinct c2, c1 from ext_t1) x ) y group by c2;
-select c2, sum(c1 + c2), max(c3) from (select c1, c2, c1 + 2 as c3 from (select distinct c2, c1 from ext_t1) x ) y group by c2;
+explain select c2, sum(c1 + c2), max(c3) from (select c1, c2, c1 + 2 as c3 from (select distinct c2, c1 from ext_t2) x ) y group by c2;
+select c2, sum(c1 + c2), max(c3) from (select c1, c2, c1 + 2 as c3 from (select distinct c2, c1 from ext_t2) x ) y group by c2;
 
-explain select * from ext_t1 where c2 in (select 1 from ext_t1);
-select * from ext_t1 where c2 in (select 1 from ext_t1);
+explain select * from ext_t2 where c2 in (select 1 from ext_t2);
+select * from ext_t2 where c2 in (select 1 from ext_t2);

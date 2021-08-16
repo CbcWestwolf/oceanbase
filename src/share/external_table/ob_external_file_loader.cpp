@@ -58,8 +58,13 @@ int ObExternalFileLoader::read(union DataSource& data_source)
     allocator_->free(cur_buf);
     LOG_WARN("fail to fread the file", K(ret), K(ferror(fp_)));
   } else {
+
     cur_buf[data_source.buffer.buf_size_] = '\0';
     data_source.buffer.ptr_ = cur_buf;
+    if (cur_buf[data_source.buffer.buf_size_ - 1] == '\n') {
+      --data_source.buffer.buf_size_;
+      cur_buf[data_source.buffer.buf_size_] = '\0';
+    }
   }
 
   return ret;

@@ -12,6 +12,7 @@ ob_set_subtarget(ob_share external_table
   external_table/ob_external_file_loader.cpp
   external_table/ob_external_oss_loader.cpp
   external_table/ob_external_csv_iterator.cpp
+  external_table/ob_external_tok_iterator.cpp
 )
 
 ob_set_subtarget(ob_share cache

@@ -3,79 +3,83 @@ drop database if exists et_test;
 create database et_test;
 use et_test;
 set recyclebin = 0;
-create external table file_stu (
+create external table file_csv_stu (
 sid     int,
 name    varchar(32),
 cls     int
-) external_url='/home/chenbochuan.cbc/data/px/stu.txt';
-create external table file_teacher (
+) external_url='/home/chenbochuan.cbc/data/px/stu.csv';
+create external table file_csv_teacher (
 tid        int,
 name       varchar(32),
 subject    varchar(4)
-) external_url='/home/chenbochuan.cbc/data/px/teacher.txt';
-create external table file_score (
+) external_url='/home/chenbochuan.cbc/data/px/teacher.csv';
+create external table file_csv_score (
 sid     int,
 subject varchar(4),
 score   int
-) external_url='/home/chenbochuan.cbc/data/px/score.txt';
-create external table oss_stu (
+) external_url='/home/chenbochuan.cbc/data/px/score.csv';
+create external table oss_csv_stu (
 sid     int,
 name    varchar(32),
 cls     int
-) external_url='px/stu.txt', external_protocal='oss';
-create external table oss_teacher (
+) external_url='oss://external-table/px/stu.csv?host=oss-cn-hangzhou.aliyuncs.com&access_id=DEscLTAIStR9ccJJGQFHEaP2&access_key=bhdegy7AqfsFLj]2YpolgMjyTFVZNhK', external_protocal='oss';
+create external table oss_csv_teacher (
 tid        int,
 name       varchar(32),
 subject    varchar(4)
-) external_url='px/teacher.txt', external_protocal='oss';
-create external table oss_score (
+) external_url='oss://external-table/px/teacher.csv?host=oss-cn-hangzhou.aliyuncs.com&access_id=DEscLTAIStR9ccJJGQFHEaP2&access_key=bhdegy7AqfsFLj]2YpolgMjyTFVZNhK', external_protocal='oss';
+create external table oss_csv_score (
 sid     int,
 subject varchar(4),
 score   int
-) external_url='px/score.txt', external_protocal='oss';
-explain select * from file_stu, file_score where file_stu.sid = file_score.sid and file_stu.sid < 12;
-Query Plan
-============================================
-|ID|OPERATOR   |NAME      |EST. ROWS|COST  |
---------------------------------------------
-|0 |HASH JOIN  |          |980100   |764307|
-|1 | TABLE SCAN|file_score|10000    |83017 |
-|2 | TABLE SCAN|file_stu  |10000    |83017 |
-============================================
-
-Outputs & filters: 
--------------------------------------
-  0 - output([file_stu.sid], [file_stu.name], [file_stu.cls], [file_score.sid], [file_score.subject], [file_score.score]), filter(nil), 
-      equal_conds([file_stu.sid = file_score.sid]), other_conds(nil)
-  1 - output([file_score.sid], [file_score.subject], [file_score.score]), filter([file_score.sid < 12]), 
-      access([file_score.sid], [file_score.subject], [file_score.score]), partitions(p0)
-  2 - output([file_stu.sid], [file_stu.name], [file_stu.cls]), filter([file_stu.sid < 12]), 
-      access([file_stu.sid], [file_stu.name], [file_stu.cls]), partitions(p0)
-
-select * from file_stu, file_score where file_stu.sid = file_score.sid and file_stu.sid < 12;
+) external_url='oss://external-table/px/score.csv?host=oss-cn-hangzhou.aliyuncs.com&access_id=DEscLTAIStR9ccJJGQFHEaP2&access_key=bhdegy7AqfsFLj]2YpolgMjyTFVZNhK', external_protocal='oss';
+create external table file_tok_stu (
+sid     int,
+name    varchar(32),
+cls     int
+) external_url='/home/chenbochuan.cbc/data/px/stu.tok', external_format='tok';
+create external table file_tok_teacher (
+tid        int,
+name       varchar(32),
+subject    varchar(4)
+) external_url='/home/chenbochuan.cbc/data/px/teacher.tok', external_format='tok';
+create external table file_tok_score (
+sid     int,
+subject varchar(4),
+score   int
+) external_url='/home/chenbochuan.cbc/data/px/score.tok', external_format='tok';
+create external table oss_tok_stu (
+sid     int,
+name    varchar(32),
+cls     int
+) external_url='oss://external-table/px/stu.tok?host=oss-cn-hangzhou.aliyuncs.com&access_id=DEscLTAIStR9ccJJGQFHEaP2&access_key=bhdegy7AqfsFLj]2YpolgMjyTFVZNhK', external_protocal='oss', external_format='tok';
+create external table oss_tok_teacher (
+tid        int,
+name       varchar(32),
+subject    varchar(4)
+) external_url='oss://external-table/px/teacher.tok?host=oss-cn-hangzhou.aliyuncs.com&access_id=DEscLTAIStR9ccJJGQFHEaP2&access_key=bhdegy7AqfsFLj]2YpolgMjyTFVZNhK', external_protocal='oss', external_format='tok';
+create external table oss_tok_score (
+sid     int,
+subject varchar(4),
+score   int
+) external_url='oss://external-table/px/score.tok?host=oss-cn-hangzhou.aliyuncs.com&access_id=DEscLTAIStR9ccJJGQFHEaP2&access_key=bhdegy7AqfsFLj]2YpolgMjyTFVZNhK', external_protocal='oss', external_format='tok';
+select * from file_csv_stu, file_csv_score where file_csv_stu.sid = file_csv_score.sid and file_csv_stu.sid < 12;
 sid	name	cls	sid	subject	score
 11	'a1'	1	11	'EN'	60
 11	'a1'	1	11	'MA'	60
-explain select * from file_score, file_teacher where file_teacher.subject = file_score.subject and file_teacher.tid = 1;
-Query Plan
-===============================================
-|ID|OPERATOR   |NAME        |EST. ROWS|COST   |
------------------------------------------------
-|0 |HASH JOIN  |            |970299   |1172701|
-|1 | TABLE SCAN|file_teacher|990      |83017  |
-|2 | TABLE SCAN|file_score  |100000   |66272  |
-===============================================
-
-Outputs & filters: 
--------------------------------------
-  0 - output([file_score.sid], [file_score.subject], [file_score.score], [file_teacher.tid], [file_teacher.name], [file_teacher.subject]), filter(nil), 
-      equal_conds([file_teacher.subject = file_score.subject]), other_conds(nil)
-  1 - output([file_teacher.subject], [file_teacher.tid], [file_teacher.name]), filter([file_teacher.tid = 1]), 
-      access([file_teacher.subject], [file_teacher.tid], [file_teacher.name]), partitions(p0)
-  2 - output([file_score.subject], [file_score.sid], [file_score.score]), filter(nil), 
-      access([file_score.subject], [file_score.sid], [file_score.score]), partitions(p0)
-
-select * from file_score, file_teacher where file_teacher.subject = file_score.subject and file_teacher.tid = 1;
+select * from oss_csv_stu, oss_csv_score where oss_csv_stu.sid = oss_csv_score.sid and oss_csv_stu.sid < 12;
+sid	name	cls	sid	subject	score
+11	'a1'	1	11	'EN'	60
+11	'a1'	1	11	'MA'	60
+select * from file_tok_stu, file_tok_score where file_tok_stu.sid = file_tok_score.sid and file_tok_stu.sid < 12;
+sid	name	cls	sid	subject	score
+11	'a1'	1	11	'EN'	60
+11	'a1'	1	11	'MA'	60
+select * from oss_tok_stu, oss_tok_score where oss_tok_stu.sid = oss_tok_score.sid and oss_tok_stu.sid < 12;
+sid	name	cls	sid	subject	score
+11	'a1'	1	11	'EN'	60
+11	'a1'	1	11	'MA'	60
+select * from file_csv_score, file_csv_teacher where file_csv_teacher.subject = file_csv_score.subject and file_csv_teacher.tid = 1;
 sid	subject	score	tid	name	subject
 11	'EN'	60	1	'MissZhang'	'EN'
 12	'EN'	70	1	'MissZhang'	'EN'
@@ -91,49 +95,39 @@ sid	subject	score	tid	name	subject
 62	'EN'	90	1	'MissZhang'	'EN'
 63	'EN'	99	1	'MissZhang'	'EN'
 64	'EN'	87	1	'MissZhang'	'EN'
-explain select * from oss_stu, oss_score where oss_stu.sid = oss_score.sid and oss_stu.sid < 12;
-Query Plan
-===========================================
-|ID|OPERATOR   |NAME     |EST. ROWS|COST  |
--------------------------------------------
-|0 |HASH JOIN  |         |980100   |764307|
-|1 | TABLE SCAN|oss_score|10000    |83017 |
-|2 | TABLE SCAN|oss_stu  |10000    |83017 |
-===========================================
-
-Outputs & filters: 
--------------------------------------
-  0 - output([oss_stu.sid], [oss_stu.name], [oss_stu.cls], [oss_score.sid], [oss_score.subject], [oss_score.score]), filter(nil), 
-      equal_conds([oss_stu.sid = oss_score.sid]), other_conds(nil)
-  1 - output([oss_score.sid], [oss_score.subject], [oss_score.score]), filter([oss_score.sid < 12]), 
-      access([oss_score.sid], [oss_score.subject], [oss_score.score]), partitions(p0)
-  2 - output([oss_stu.sid], [oss_stu.name], [oss_stu.cls]), filter([oss_stu.sid < 12]), 
-      access([oss_stu.sid], [oss_stu.name], [oss_stu.cls]), partitions(p0)
-
-select * from oss_stu, oss_score where oss_stu.sid = oss_score.sid and oss_stu.sid < 12;
-sid	name	cls	sid	subject	score
-11	'a1'	1	11	'EN'	60
-11	'a1'	1	11	'MA'	60
-explain select * from oss_score, oss_teacher where oss_teacher.subject = oss_score.subject and oss_teacher.tid = 1;
-Query Plan
-==============================================
-|ID|OPERATOR   |NAME       |EST. ROWS|COST   |
-----------------------------------------------
-|0 |HASH JOIN  |           |970299   |1172701|
-|1 | TABLE SCAN|oss_teacher|990      |83017  |
-|2 | TABLE SCAN|oss_score  |100000   |66272  |
-==============================================
-
-Outputs & filters: 
--------------------------------------
-  0 - output([oss_score.sid], [oss_score.subject], [oss_score.score], [oss_teacher.tid], [oss_teacher.name], [oss_teacher.subject]), filter(nil), 
-      equal_conds([oss_teacher.subject = oss_score.subject]), other_conds(nil)
-  1 - output([oss_teacher.subject], [oss_teacher.tid], [oss_teacher.name]), filter([oss_teacher.tid = 1]), 
-      access([oss_teacher.subject], [oss_teacher.tid], [oss_teacher.name]), partitions(p0)
-  2 - output([oss_score.subject], [oss_score.sid], [oss_score.score]), filter(nil), 
-      access([oss_score.subject], [oss_score.sid], [oss_score.score]), partitions(p0)
-
-select * from oss_score, oss_teacher where oss_teacher.subject = oss_score.subject and oss_teacher.tid = 1;
+select * from oss_csv_score, oss_csv_teacher where oss_csv_teacher.subject = oss_csv_score.subject and oss_csv_teacher.tid = 1;
+sid	subject	score	tid	name	subject
+11	'EN'	60	1	'MissZhang'	'EN'
+12	'EN'	70	1	'MissZhang'	'EN'
+13	'EN'	80	1	'MissZhang'	'EN'
+21	'EN'	58	1	'MissZhang'	'EN'
+22	'EN'	90	1	'MissZhang'	'EN'
+31	'EN'	80	1	'MissZhang'	'EN'
+41	'EN'	80	1	'MissZhang'	'EN'
+42	'EN'	90	1	'MissZhang'	'EN'
+51	'EN'	89	1	'MissZhang'	'EN'
+52	'EN'	99	1	'MissZhang'	'EN'
+61	'EN'	100	1	'MissZhang'	'EN'
+62	'EN'	90	1	'MissZhang'	'EN'
+63	'EN'	99	1	'MissZhang'	'EN'
+64	'EN'	87	1	'MissZhang'	'EN'
+select * from file_tok_score, file_tok_teacher where file_tok_teacher.subject = file_tok_score.subject and file_tok_teacher.tid = 1;
+sid	subject	score	tid	name	subject
+11	'EN'	60	1	'MissZhang'	'EN'
+12	'EN'	70	1	'MissZhang'	'EN'
+13	'EN'	80	1	'MissZhang'	'EN'
+21	'EN'	58	1	'MissZhang'	'EN'
+22	'EN'	90	1	'MissZhang'	'EN'
+31	'EN'	80	1	'MissZhang'	'EN'
+41	'EN'	80	1	'MissZhang'	'EN'
+42	'EN'	90	1	'MissZhang'	'EN'
+51	'EN'	89	1	'MissZhang'	'EN'
+52	'EN'	99	1	'MissZhang'	'EN'
+61	'EN'	100	1	'MissZhang'	'EN'
+62	'EN'	90	1	'MissZhang'	'EN'
+63	'EN'	99	1	'MissZhang'	'EN'
+64	'EN'	87	1	'MissZhang'	'EN'
+select * from oss_tok_score, oss_tok_teacher where oss_tok_teacher.subject = oss_tok_score.subject and oss_tok_teacher.tid = 1;
 sid	subject	score	tid	name	subject
 11	'EN'	60	1	'MissZhang'	'EN'
 12	'EN'	70	1	'MissZhang'	'EN'

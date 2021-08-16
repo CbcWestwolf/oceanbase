@@ -109,6 +109,8 @@ int ObExternalDataAccessService::get_iterator(
 
   if (format == "csv") {
     GET_EXTERNAL_ITERATOR(ObExternalCSVIterator);
+  } else if (format == "tok") {
+    GET_EXTERNAL_ITERATOR(ObExternalTokenIterator);
   } else {
     ret = OB_INVALID_ARGUMENT;
     LOG_WARN("wrong format type", K(format));

@@ -18,6 +18,7 @@
 #include "share/external_table/ob_external_file_loader.h"
 #include "share/external_table/ob_external_oss_loader.h"
 #include "share/external_table/ob_external_csv_iterator.h"
+#include "share/external_table/ob_external_tok_iterator.h"
 
 namespace oceanbase {
 namespace common {
