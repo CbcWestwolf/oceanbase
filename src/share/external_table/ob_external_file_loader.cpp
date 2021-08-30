@@ -12,6 +12,7 @@
 
 #define USING_LOG_PREFIX SHARE
 
+#include <string.h>
 #include "ob_external_file_loader.h"
 
 namespace oceanbase {
@@ -19,11 +20,15 @@ namespace share {
 int ObExternalFileLoader::open(const schema::ObTableSchema* table_schema)
 {
   int ret = OB_SUCCESS;
-  const char* path = table_schema->get_external_url().ptr();
 
-  if (OB_ISNULL(fp_ = fopen(path, "r"))) {
-    ret = OB_FILE_NOT_EXIST;
-    LOG_WARN("external path not exist", K(path), K(ret));
+  has_read_ = false;
+
+  new (&file_name_) ObString(table_schema->get_external_url());
+
+  if (OB_FAIL(file_reader_.open(file_name_, false))) {
+    LOG_WARN("fail to open file reader", K(file_name_), K(ret));
+  } else {
+    file_size_ = get_file_size(file_name_.ptr());
   }
 
   return ret;
@@ -32,39 +37,19 @@ int ObExternalFileLoader::open(const schema::ObTableSchema* table_schema)
 int ObExternalFileLoader::read(union DataSource& data_source)
 {
   int ret = OB_SUCCESS;
-  char* cur_buf = nullptr;
-  if (OB_ISNULL(fp_)) {
-    ret = OB_FILE_NOT_OPENED;
-    LOG_WARN("file not open", K(ret), K(fp_));
-  } else if (feof(fp_)) {
-    ret = OB_ITER_END;
-  } else if (OB_FAIL(fseek(fp_, 0L, SEEK_END))) {
-    ret = OB_ERR_UNEXPECTED;
-    LOG_WARN("fail to locate to the end of file", K(ret));
-  } else if (OB_UNLIKELY(-1 == (data_source.buffer.buf_size_ = ftell(fp_)))) {
-    ret = OB_ERR_UNEXPECTED;
-    LOG_WARN("fail to get the length of the file", K(ret));
-  } else if (OB_ISNULL(
-                 cur_buf = static_cast<char*>(allocator_->alloc(sizeof(char) * (data_source.buffer.buf_size_ + 1))))) {
-    ret = OB_ALLOCATE_MEMORY_FAILED;
-    LOG_WARN("fail to alloc new obj", K(ret));
-  } else if (OB_FAIL(fseek(fp_, 0L, SEEK_SET))) {
-    ret = OB_ERR_UNEXPECTED;
-    allocator_->free(cur_buf);
-    LOG_WARN("fail to locate to the begin of file", K(ret));
-  } else if (OB_UNLIKELY(0 == (data_source.buffer.buf_size_ =
-                                      fread(cur_buf, sizeof(char), data_source.buffer.buf_size_, fp_)))) {
-    ret = OB_ERR_UNEXPECTED;
-    allocator_->free(cur_buf);
-    LOG_WARN("fail to fread the file", K(ret), K(ferror(fp_)));
-  } else {
 
-    cur_buf[data_source.buffer.buf_size_] = '\0';
-    data_source.buffer.ptr_ = cur_buf;
-    if (cur_buf[data_source.buffer.buf_size_ - 1] == '\n') {
-      --data_source.buffer.buf_size_;
-      cur_buf[data_source.buffer.buf_size_] = '\0';
+  if (!has_read_) {
+    char* cur_buf = nullptr;
+    cur_buf = static_cast<char*>(allocator_->alloc(sizeof(char) * (file_size_ + 1)));
+    file_reader_.pread(cur_buf, file_size_, 0, file_size_);
+    has_read_ = true;
+    cur_buf[file_size_] = '\0';
+    if (cur_buf[file_size_ - 1] == '\n') {
+      file_size_--;
+      cur_buf[file_size_] = '\0';
     }
+    data_source.buffer.ptr_ = cur_buf;
+    data_source.buffer.buf_size_ = file_size_;
   }
 
   return ret;
@@ -73,22 +58,15 @@ int ObExternalFileLoader::read(union DataSource& data_source)
 int ObExternalFileLoader::close()
 {
   int ret = OB_SUCCESS;
-  if (OB_ISNULL(fp_)) {
-    ret = OB_FILE_NOT_OPENED;
-    LOG_WARN("try to close a closed file");
-  } else if (OB_FAIL(fclose(fp_))) {
-    ret = OB_ERR_UNEXPECTED;
-    LOG_WARN("fail to close file", K(fp_));
-  } else {
-    LOG_DEBUG("succ to close file", K(fp_));
+  if (file_reader_.is_opened()) {
+    file_reader_.close();
   }
   return ret;
 }
 
 void ObExternalFileLoader::reset()
 {
-  fp_ = NULL;
-  allocator_ = NULL;
+  has_read_ = false;
 }
 
 }  // namespace share

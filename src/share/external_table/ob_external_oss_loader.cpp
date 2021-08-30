@@ -64,7 +64,9 @@ int ObExternalOSSLoader::read(union DataSource& data_source)
 int ObExternalOSSLoader::close()
 {
   int ret = OB_SUCCESS;
-
+  if (oss_reader_.is_opened()) {
+    oss_reader_.close();
+  }
   return ret;
 }
 

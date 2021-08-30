@@ -13,7 +13,8 @@
 #ifndef OCEANBASE_SHARE_TABLE_OB_EXTERNAL_FILE_LOADER_H
 #define OCEANBASE_SHARE_TABLE_OB_EXTERNAL_FILE_LOADER_H
 
-#include <stdio.h>
+// #include <stdio.h>
+#include "lib/file/ob_file.h"
 #include "ob_i_external_loader.h"
 
 namespace oceanbase {
@@ -30,20 +31,25 @@ namespace share {
 class ObExternalFileLoader : public ObIExternalLoader {
 
 public:
-  ObExternalFileLoader(ObIAllocator* allocator) : ObIExternalLoader(allocator)
+  ObExternalFileLoader(ObIAllocator* allocator) : ObIExternalLoader(allocator), file_size_(-1), has_read_(false)
   {}
 
   virtual int open(const schema::ObTableSchema* table_schema) override;
+  virtual int read(union DataSource& data_source) override;
   inline bool has_next() override
   {
-    return OB_NOT_NULL(fp_) && !feof(fp_);
+    return !has_read_;
   }
-  virtual int read(union DataSource& data_source) override;
   virtual int close() override;
   virtual void reset() override;
 
 private:
-  FILE* fp_;
+  // FILE* fp_;
+
+  ObFileReader file_reader_;
+  ObString file_name_;
+  int64_t file_size_;
+  bool has_read_;
 };
 
 }  // namespace share
